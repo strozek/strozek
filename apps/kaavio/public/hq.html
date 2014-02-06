@@ -1,0 +1,311 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="user-scalable=no, width=device-width" />
+  <title>Your kaavio dashboard</title>
+  <link rel="stylesheet" href="css/ui-lightness/jquery-ui-1.10.0.custom.css"/>
+  <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <script src="js/jquery-1.9.0.js"></script>
+  <script src="js/jquery-ui-1.10.0.custom.js"></script>
+  <script src="js/bootstrap.js"></script>
+  <style>
+    body {
+      margin-left: 5px;
+      margin-right: 5px;
+      padding-top: 56px;
+      font-family: 'Georgia', Helvetica, Arial, sans-serif;
+      padding-bottom: 50px;
+    }
+    #errorBox {color:red; font-weight:bold;}
+    td {padding:5px;}
+    #footer {
+      position: fixed;
+      bottom: 0px;
+      margin-left: -5px;
+      border-top: solid 1px #777777;
+      background: #bbccbb;
+      width: 100%;
+    }
+    .footrow {
+      padding: 12px;
+      border-right: solid 1px #333333;
+      text-align: center;
+      cursor: pointer;
+    }
+    .awardright {
+      text-align: right;
+    }
+    #logo {
+      position: absolute;
+      left: 0px;
+      top: 0px;
+      vertical-align: middle;
+      text-align: center;
+    }
+    #boardBox {
+      display: none;
+    }
+    #activityBox {
+      display: none;
+    }
+    #brandName {
+      padding-left: 73px;
+    }
+    .awardcell {
+      padding-left: 20px;
+    }
+    .ondate {
+      color: #999999;
+    }
+    .nopad {
+      padding: 10px 7px !important;
+    }
+    #activityblock {
+      font-size: 12px;
+      font-family: tahoma;
+      line-height: 13px;
+    }
+    #curtain {
+      position: absolute;
+      width: 90%;
+      height: 70%;
+      overflow: none;
+      background: #ffffff;
+    }
+    #aboutBox {
+      width: 80%;
+      position: absolute;
+      top: 100px;
+      padding: 10px;
+      margin: auto;
+      background: #ffffff;
+      border: 1px solid #cccccc;
+      z-index: 10;
+      display: none;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+<div id="curtain">
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+      <img id="logo" src="img/logo.png">
+      <a class="brand" id="brandName">kaavio</a>
+      <div class="nav-collapse collapse">
+        <ul class="nav">
+          <li class="active"><a class="nopad">Home</a></li>
+          <li><a class="nopad" href="javascript:about()">About</a></li>
+          <li><a class="nopad" href="mailto:kaavio-no-reply@hotmail.com">Contact</a></li>
+        </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+  </div>
+  <div id="main">
+    <div id="errorBox"></div>
+    <div id="nameBox"></div>
+    <div id="badgesRemainingBox"></div>
+    <hr>
+    <div id="badgesBox"></div>
+    <hr>
+  </div>
+  <div id="awardBox">
+    <table>
+      <tr>
+        <td class="awardright">Award a badge:</td>
+        <td><select id="badgeSelect"></select></td>
+      </tr>
+      <tr>
+        <td class="awardright">to user:</td>
+        <td><select id="userSelect"></select></td>
+      </tr>
+      <tr>
+        <td class="awardright">Comment:</td>
+        <td><textarea id="comment"></textarea></td>
+      </tr>
+      <tr>
+        <td></td> 
+        <td><input type="button" value="award!" onClick="award()"></td>
+      </tr>
+    </table>
+  </div>
+  <div id="boardBox">
+    Leaderboard for:
+    <select id="boardBadgeSelect" onChange="updateBoard()">
+    </select>
+    <br><br>
+    <div id="boardListBox"></div>
+  </div>
+  <div id="activityBox"></div>
+  <br>
+  <br>
+  <br>
+  <div id="footer">
+    <table width="100%"><tr>
+      <td class="footrow" onClick="showSummary()">Summary</td>
+      <td class="footrow" onClick="showLeaderboard()">Leaderboard</td>
+      <td class="footrow" onClick="showActivity()">Activity</td>
+    </tr></table>
+  </div>
+</div>
+<div id="aboutBox">
+  kaavio is a lightweight real-time, peer evaluation system.<br>
+  <br>
+  kaavio allows you to award badges to your peers for outstanding performance.<br>
+  <br>
+  have questions? <a href="mailto:kaavio-no-reply@hotmail.com">contact us</a>.<br>
+  <br>
+  <br>
+  <input type="button" onClick="aboutHide()" value="close">
+<div>
+<script>
+  var url;
+  var teamID;
+  var secret;
+
+  $( document ).ready(function() {
+    url = document.URL;
+    var match = url.match(/\?(\d+)\/([0-9a-z]+)$/);
+    if(!match || match.length!=3) {
+      $('#errorBox').html('You need to provide a correct URL.');
+      return;
+    }
+    teamID = match[1];
+    secret = match[2];
+    updatePage();
+    updateFeed();
+    setInterval(updateFeed, 10000);
+  });
+
+  function updatePage()
+  {
+    $.ajax({ url:"/hq/"+teamID+"/"+secret, dataType:"json"}).done(function(data) {
+      if(data.status != 0) {$('#errorBox').html(data.message);}
+      else {
+        $('#nameBox').html("Hello, <b>"+data.firstName+" "+data.lastName+"</b> (Team "+data.teamName+")");
+        $('#badgesRemainingBox').html("You have "+data.badgesLeft+" badges remaining to give out");
+        s = '';
+	for(var k in data.badgesReceived)
+	{
+          pl = data.badgesReceived[k]==1 ? '' : 's';
+	  s += '<div>' + data.badgesReceived[k] + ' badge'+pl+' for '+k+'</div>';
+	}
+        $('#badgesBox').html("You have been awarded the following badges: "+s);
+        badgeSelect = document.getElementById('badgeSelect');
+	$('#badgeSelect').empty();
+	for(var k in data.badges)
+	{
+	  badgeSelect.options[badgeSelect.options.length] = new Option(data.badges[k], k);
+	}
+        boardBadgeSelect = document.getElementById('boardBadgeSelect');
+	$('#boardBadgeSelect').empty();
+	for(var k in data.badges)
+	{
+	  boardBadgeSelect.options[boardBadgeSelect.options.length] = new Option(data.badges[k], k);
+	}
+	updateBoard();
+	userSelect = document.getElementById('userSelect');
+	$('#userSelect').empty();
+	for(var k in data.users)
+	{
+	  if(data.userID != k) {userSelect.options[userSelect.options.length] = new Option(data.users[k], k);}
+	}
+      }
+    });
+  }
+  var board;
+  function updateBoard()
+  {
+    boardID = document.getElementById('boardBadgeSelect').value;
+    $.ajax({ url:"/board/"+teamID+"/"+boardID, dataType:"json"}).done(function(data) {
+      if(data.status != 0) {$('#errorBox').html(data.message);}
+      else {
+        board = [];
+        for(var k in data.board)
+	{
+	  board[board.length] = [k, data.board[k]];
+	}
+        board.sort(function(a, b) {return b[1]-a[1]});
+	s = '<table>';
+	for(var i in board)
+	{
+          pl = board[i][1]==1 ? '' : 's';
+	  s += "<tr><td>"+board[i][0]+"</td><td class='awardcell'>"+board[i][1]+" award"+pl+"</td></tr>";
+	}
+	s += "</table>";
+	$('#boardListBox').html(s);
+      }
+    });
+  }
+  function updateFeed()
+  {
+    $.ajax({ url:"/feed/"+teamID, dataType:"json"}).done(function(data) {
+      if(data.status != 0) {$('#errorBox').html(data.message);}
+      else {
+	s = '<div>Activity feed:</div><br><div id="activityblock">';
+        for(var k in data.activity)
+	{
+	  row = data.activity[k];
+	  var t = new Date(row[5]*1000).toString().match(/\w+\s\w+\s\d+/);
+          var c = row[6]=='' ? '' : ' with comment: '+row[6];
+	  s += "<b>"+row[0]+" "+row[1]+"</b> gave <b>"+row[2]+" "+row[3]+"</b> the "+row[4]+" badge<br><span class='ondate'>on "+t+c+"</span><br><br>";
+	}
+	s += "</div>";
+	$('#activityBox').html(s);
+      }
+    });    
+  }
+  function award()
+  {
+    var data = {teamID: teamID,
+    		secret: secret,
+    		badge: document.getElementById('badgeSelect').value,
+    		target: document.getElementById('userSelect').value,
+    		comment: document.getElementById('comment').value};
+    $.ajax({ url:"/award", type:"POST", data:data, dataType:"json"}).done(function(data) {
+      if(data.status != 0) {$('#errorBox').html(data.message);}
+      updatePage();
+      updateFeed();
+      document.getElementById('comment').value = '';
+    });
+  }
+  function about()
+  {
+    document.getElementById('curtain').style.opacity = 0.1;
+    $('#aboutBox').show();
+  }
+  function aboutHide()
+  {
+    $('#aboutBox').hide();
+    document.getElementById('curtain').style.opacity = 1.0;
+  }
+  function showSummary()
+  {
+    $('#main').show();
+    $('#awardBox').show();
+    $('#boardBox').hide();
+    $('#activityBox').hide();
+  }
+  function showLeaderboard()
+  {
+    $('#main').hide();
+    $('#awardBox').hide();
+    $('#boardBox').show();
+    $('#activityBox').hide();
+  }
+  function showActivity()
+  {
+    $('#main').hide();
+    $('#awardBox').hide();
+    $('#boardBox').hide();
+    $('#activityBox').show();
+  }
+</script>
+</body>
+</html>

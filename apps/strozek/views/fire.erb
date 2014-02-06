@@ -1,0 +1,205 @@
+<html>
+<body style="background:#ffffff;">
+
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="canvas" width="500" height="300"></canvas>
+<script language="javascript">
+
+var lightdata;
+var c = document.getElementById('canvas').getContext('2d');
+var cave = new Image();
+var torch = new Image();
+var heartbeat = null;
+	
+function initializeLight()
+{
+	lightdata = new Object;
+	lightdata.lightmean = 30;	// parameters used to lighten the background
+	lightdata.lightdev = 16; 
+	lightdata.xlight=200;
+	lightdata.ylight=130;
+	lightdata.radius=40;
+	lightdata.x = [];	// position of light particles
+	lightdata.y = [];
+	lightdata.temperature = [];
+	for(var i=0; i<80; ++i) 
+	{
+		lightdata.x[i] = parseInt(lightdata.xlight + Math.random()*5-2);
+		lightdata.y[i] = parseInt(lightdata.ylight + 10 + Math.random()*5-2);
+		lightdata.temperature[i] = parseInt(Math.random()*50);
+	}
+}
+
+function drawLight()
+{
+	var rgb = [63,53,33, 63,61,22, 63,57,3, 63,46,3, 63,20,3, 46,14,1, 46,14,1];
+	var direction = [0, -1, -1, 0, 1, 0, 0, 1];
+	c.drawImage(cave, 0, 0);
+
+	// change light Normal distribution data
+	lightdata.lightmean += parseInt(Math.random()*6-3);
+	if(lightdata.lightmean<20) lightdata.lightmean = 20; 
+	if(lightdata.lightmean>40) lightdata.lightmean = 40;
+	lightdata.lightdev += parseInt(Math.random()*6-3);
+	if(lightdata.lightdev<12) lightdata.lightdev = 12;
+	if(lightdata.lightdev>20) lightdata.lightdev = 20;
+	var imageData = c.getImageData(lightdata.xlight-lightdata.radius, lightdata.ylight-lightdata.radius, lightdata.radius*2, lightdata.radius*2);
+	for(var y=-lightdata.radius; y<lightdata.radius; ++y)
+	{
+		for(var x=-lightdata.radius; x<lightdata.radius; ++x)
+		{
+			// lighten area within the circle
+			if(x*x+y*y<lightdata.radius*lightdata.radius && 
+				x+lightdata.xlight>=0 && x+lightdata.xlight<640 &&
+				y+lightdata.ylight>=0 && y+lightdata.ylight<480) 
+			{
+				var r = imageData.data[(x+lightdata.radius+(y+lightdata.radius)*lightdata.radius*2)*4]/4;
+				var g = imageData.data[(x+lightdata.radius+(y+lightdata.radius)*lightdata.radius*2)*4+1]/4;
+				var b = imageData.data[(x+lightdata.radius+(y+lightdata.radius)*lightdata.radius*2)*4+2]/4;
+
+				// lighten points according to Normal distribution
+				var level = (x*x+y*y)*16/(lightdata.radius*lightdata.radius);
+				var light = (3*r+6*g+b)/10;
+				var gauss = Math.exp(-1.0*((light-lightdata.lightmean)*(light-lightdata.lightmean))/(lightdata.lightdev*lightdata.lightdev));
+				r = ((16-level)*(r+1.0*r*gauss)+level*r)/16;
+				g = ((16-level)*(g+1.0*g*gauss)+level*g)/16;
+				b = ((16-level)*(b+1.0*b*gauss)+level*b)/16;
+				if(r>63) r=63;
+				if(g>63) g=63;
+				if(b>63) b=63;
+				imageData.data[(x+lightdata.radius+(y+lightdata.radius)*lightdata.radius*2)*4] = 4*r;
+				imageData.data[(x+lightdata.radius+(y+lightdata.radius)*lightdata.radius*2)*4+1] = 4*g;
+				imageData.data[(x+lightdata.radius+(y+lightdata.radius)*lightdata.radius*2)*4+2] = 4*b;
+			}
+		}
+	}
+	c.putImageData(imageData, lightdata.xlight-lightdata.radius, lightdata.ylight-lightdata.radius);
+
+	// Draw a light torch
+	var xf, xt, xl, yf, yt, yl;
+	if(lightdata.xlight-5<0)
+	{
+		xf = 5-lightdata.xlight;
+		xl = 11-xf;
+		xt = 0;
+	}
+	else if(lightdata.xlight-5>629)
+	{
+		xf = 0;
+		xl = 640+5-lightdata.xlight;
+		xt = lightdata.xlight-5;
+	}
+	else
+	{
+		xf = 0;
+		xl = 11;
+		xt = lightdata.xlight-5;
+	}
+	if(lightdata.ylight+12<16)
+	{
+		yf = 16-12-lightdata.ylight;
+		yl = 20-yf;
+		yt = 16;
+	}
+	else if(lightdata.ylight+12>460)
+	{
+		yf = 0;
+		yl = 480-12-lightdata.ylight;
+		yt = lightdata.ylight+12;
+	}
+	else
+	{
+		yf = 0;
+		yl = 20;
+		yt = lightdata.ylight+12;
+	}
+	if(xl>0 && yl>0)
+	{
+		c.globalCompositeOperation = 'lighter';
+		c.drawImage(torch, xf, yf, xl, yl, xt, yt, xl, yl);
+		c.globalCompositeOperation = 'source-over';
+	}
+
+	imageData = c.getImageData(0, 0, 640, 480);	// TODO: make this more efficient, not dependent on 640x480
+	// Draw light particles
+	for(var x=0; x<80; ++x)
+	{
+		var y = lightdata.temperature[x]%10;
+		var i = parseInt( lightdata.temperature[x]/10 );
+		var r = parseInt( (rgb[i*3+0]*(10-y) + rgb[i*3+3]*y)/10 );
+		var g = parseInt( (rgb[i*3+1]*(10-y) + rgb[i*3+4]*y)/10 );
+		var b = parseInt( (rgb[i*3+2]*(10-y) + rgb[i*3+5]*y)/10 );
+		if(lightdata.x[x]>=0 && lightdata.x[x]<640 &&
+		   lightdata.y[x]>=0 && lightdata.y[x]<480)
+		{
+			imageData.data[ (lightdata.x[x] + lightdata.y[x]*640)*4] = r*4;
+			imageData.data[ (lightdata.x[x] + lightdata.y[x]*640)*4+1] = g*4;
+			imageData.data[ (lightdata.x[x] + lightdata.y[x]*640)*4+2] = b*4;
+		}
+		if(Math.random()*(lightdata.ylight+10-lightdata.y[x])>8) 
+		{
+			if(lightdata.x[x]>lightdata.xlight) --lightdata.x[x];
+			if(lightdata.x[x]<lightdata.xlight) ++lightdata.x[x];
+		}
+		lightdata.x[x] += parseInt((Math.random()*7-3)/3);
+		lightdata.y[x] -= parseInt((Math.random()*4)/2);
+		lightdata.temperature[x] += parseInt(Math.random()*3);
+
+		// Light particle died (too cold); create new
+		if(lightdata.temperature[x]>50) 
+		{
+			lightdata.x[x] = lightdata.xlight+parseInt(Math.random()*5-2);
+			lightdata.y[x] = lightdata.ylight+10+parseInt(Math.random()*5-2);
+			lightdata.temperature[x] = parseInt(Math.random()*10);
+		}
+	}
+	// Soften light particles
+	var rgbread = [];
+	for(x=0; x<80; ++x) if(lightdata.x[x]>=1 && lightdata.x[x]<639 &&
+						 lightdata.y[x]>=1 && lightdata.y[x]<479)
+	{
+		for(var i=0; i<4; ++i)
+		{
+			rgbread[i*3] = imageData.data[ (lightdata.x[x]+direction[i*2] + (lightdata.y[x]+direction[i*2+1])*640)*4 ];
+			rgbread[i*3+1] = imageData.data[ (lightdata.x[x]+direction[i*2] + (lightdata.y[x]+direction[i*2+1])*640)*4+1 ];
+			rgbread[i*3+2] = imageData.data[ (lightdata.x[x]+direction[i*2] + (lightdata.y[x]+direction[i*2+1])*640)*4+2 ];			
+		}
+		var r = imageData.data[ (lightdata.x[x]+lightdata.y[x]*640)*4 ];
+		var g = imageData.data[ (lightdata.x[x]+lightdata.y[x]*640)*4+1 ];
+		var b = imageData.data[ (lightdata.x[x]+lightdata.y[x]*640)*4+2 ];
+		r = parseInt((r+rgbread[0]+rgbread[3]+rgbread[6]+rgbread[9])/5);
+		g = parseInt((g+rgbread[1]+rgbread[4]+rgbread[7]+rgbread[10])/5);
+		b = parseInt((b+rgbread[2]+rgbread[5]+rgbread[8]+rgbread[11])/5);
+		for(var i=0; i<4; ++i)
+		{
+			imageData.data[ (lightdata.x[x]+direction[i*2] + (lightdata.y[x]+direction[i*2+1])*640)*4 ] = r;
+			imageData.data[ (lightdata.x[x]+direction[i*2] + (lightdata.y[x]+direction[i*2+1])*640)*4+1 ] = g;
+			imageData.data[ (lightdata.x[x]+direction[i*2] + (lightdata.y[x]+direction[i*2+1])*640)*4+2 ] = b;
+		}
+	}
+	c.putImageData(imageData, 0, 0);	
+}
+
+function animate()
+{
+	drawLight();
+	heartbeat = setTimeout(animate, 100);
+}
+
+cave.onload = function()
+{
+	torch.onload = function()
+	{
+		initializeLight();
+		heartbeat = setTimeout(animate, 100);
+	}
+	torch.src = '/images/graphics/torch.png';
+};
+cave.src = '/images/graphics/cave.png';
+	
+</script>
+</body>
+</html>

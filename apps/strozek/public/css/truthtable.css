@@ -1,0 +1,24 @@
+#expr {
+}
+
+em {
+  background:#ffff00;
+  color:#ff0000;
+}
+
+.error {
+  color:#990000;
+}
+
+table {
+  border:solid #000000 1px;
+}
+
+td {
+  border:solid #000000 1px;
+  padding:3px 5px 3px 5px;
+}
+
+.output {
+  background:#cfc7da;
+}
