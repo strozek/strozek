@@ -9,7 +9,9 @@ require './apps/loveandmathematics/app'
 require './apps/workshop11/app'
 
 # External
-require '../trackr/web/app'
+if(File.exists?('../trackr/web/app.rb'))
+  require '../trackr/web/app'
+end
 
 rack_stack = RackStack.app do
   run Kaavio.new, :when => {:host => /kaavio\.strozek\.\w+$/}
@@ -20,7 +22,9 @@ rack_stack = RackStack.app do
   run Workshop11.new, :when => {:host => /workshop-11\.\w+$/}
 
   # External
-  run Trackr.new, :when => {:host => /trackr\.\w+$/}
+  if(defined?(Trackr))
+    run Trackr.new, :when => {:host => /trackr\.\w+$/}
+  end
 end
 
 run rack_stack

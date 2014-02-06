@@ -1,7 +1,7 @@
 --- 
 user: root
 group: root
-chdir: /home/ec2-user/web
+chdir: /home/ec2-user/strozek
 log: log/thin.log
 environment: production
 address: 0.0.0.0
