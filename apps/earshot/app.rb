@@ -43,7 +43,7 @@ def get_or_post(path, opts={}, &block)
 end
 
 
-class Workshop11 < Sinatra::Base
+class Earshot < Sinatra::Base
 
   dbFile = File.dirname(__FILE__) + "/db/data.db"
 
