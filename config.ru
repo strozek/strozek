@@ -15,11 +15,11 @@ end
 
 rack_stack = RackStack.app do
   run Kaavio.new, :when => {:host => /kaavio\.strozek\.\w+$/}
+  run Earshot.new, :when => {:host => /earshot\.strozek\.\w+$/}
   run Strozek.new, :when => {:host => /strozek\.\w+$/}
   run Strozek.new, :when => {:host => /elevenseconds\.\w+$/}
   run Strozek.new, :when => {:host => /^\d+\.\d+\.\d+\.\d+$/}
   run LoveAndMathematics.new, :when => {:host => /loveandmathematics\.\w+$/}
-  run Earshot.new, :when => {:host => /earshot\.strozek\.\w+$/}
 
   # External
   if(defined?(Trackr))
