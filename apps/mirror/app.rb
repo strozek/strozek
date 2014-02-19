@@ -76,7 +76,7 @@ class Mirror < Sinatra::Base
 	end
 
 	get '/stats' do
-		requireLoggedInUser '/login/activity/my'
+		requireLoggedInUser '/login/stats'
 		erb :stats
 	end
 
@@ -99,12 +99,8 @@ class Mirror < Sinatra::Base
 		erb :admin
 	end
 
-	get '/login' do
-		erb :login, :locals => {:returnPage => '/'}
-	end
-
-	get '/login/:returnPage' do
-		erb :login, :locals => {:returnPage => '/'+params[:returnPage]}
+	get %r{/login([a-z/]*)} do |returnPage|
+		erb :login, :locals => {:returnPage => returnPage!='' ? returnPage : '/'}
 	end
 
 	get '/logout' do
