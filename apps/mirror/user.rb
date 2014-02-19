@@ -1,5 +1,6 @@
 require 'sequel'
-require 'mail'
+# require 'mail'
+require 'net/smtp'
 require 'time'
 
 module MirrorHelpers
@@ -419,23 +420,38 @@ class User
 			url = "http://#{host}/a/#{memberId}/#{password}"
 			# TODO: For demos
 			if(memberId != @id && (email =~ /test\.com/)==nil)
-				mail = Mail.new do
-					from "mirror <no-reply@#{host}>"
-					to email
-					subject 'You have been invited to be part of Mirror'
-					text_part do
-		 		 		body 	"You can log in to Mirror by following the following URL\n"+
-		 		 					"\n"+
-		 		 					url+
-		 		 					"\n"+
-		 		 					"The mirror team"
-					end
-					html_part do
-		  			content_type 'text/html; charset=UTF-8'
-		  			body "You can log in to Mirror by following this link: <a href='#{url}'>#{url}</a>.<br><br><i>The mirror team</i>"
-		  		end
+				message = <<END
+From: Mirror <no-reply@#{host}>
+To: #{email}
+Subject: You have been invited to be part of Mirror
+
+You can log in to Mirror by following the following URL
+
+#{url}
+
+The mirror team
+
+END
+				Net::SMTP.start('localhost') do |smtp|
+					smtp.send_message message, "no-reply@#{host}", email
 				end
-				mail.deliver!
+				#mail = Mail.new do
+				#	from "mirror <no-reply@#{host}>"
+				#	to email
+				#	subject 'You have been invited to be part of Mirror'
+				#	text_part do
+		 		#		body 	"You can log in to Mirror by following the following URL\n"+
+		 		# 					"\n"+
+		 		# 					url+
+		 		# 					"\n"+
+		 		# 					"The mirror team"
+				#	end
+				#	html_part do
+		  	#		content_type 'text/html; charset=UTF-8'
+		  	#		body "You can log in to Mirror by following this link: <a href='#{url}'>#{url}</a>.<br><br><i>The mirror team</i>"
+		  	#	end
+				#end
+				#mail.deliver!
 			end
 		}
 	end
