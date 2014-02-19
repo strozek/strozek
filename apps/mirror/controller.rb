@@ -32,7 +32,7 @@ class Controller
 
 	def close
 		@logger.debug("Controller closed.")
-		@logger.close
+		#@logger.close
 		@db.disconnect
 	end
 end
