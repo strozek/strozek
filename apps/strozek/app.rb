@@ -7,14 +7,6 @@ require 'timeout'
 require 'pp'
 include Magick
 
-# use Rack::Deflater
-
-set :port, 80
-set :bind, '0.0.0.0'
-set :server, %w[thin webrick]
-# set :static_cache_control, [:public, :max_age => 2678400]
-# set :sessions, true
-
 require File.dirname(__FILE__) + '/disappearing-helper.rb'
 require File.dirname(__FILE__) + '/crowdsource-helper.rb'
 require File.dirname(__FILE__) + '/salt-NO-GIT.rb'

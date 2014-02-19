@@ -1,49 +1,38 @@
-require 'rubygems'
-require 'sinatra'
-require 'sinatra/base'
 require 'json'
 require 'digest/md5'
 require 'sqlite3'
 require 'gcm'
 require 'base64'
 
-# use Rack::Deflater
-set :port, 80
-set :bind, '0.0.0.0'
-set :server, %w[thin webrick]
-# set :static_cache_control, [:public, :max_age => 2678400]
-# set :sessions, true
-
-API_KEY = 'AIzaSyAf5B_Kmh7krNaz27OmNuPH1OZ2qy1WUzs'
-
-def INFO(s)
-  open(File.dirname(__FILE__) + '/public/appLog.html', 'a') { |f|
-    f.puts(Time.new.strftime("%Y-%m-%d %H:%M:%S\tINFO\t")+s)
-  }
-end
-
-def sendNotification(db, userId, message)
-  gcm = GCM.new(API_KEY)
-  rows = db.execute('select deviceId from deviceRegistrations where userId = ?', userId)
-  reg_ids = []
-  rows.each do |row|
-    reg_ids.push(row[0])
-  end
-  options = {:data => {:message => message.to_json}}
-  response = gcm.send_notification(reg_ids, options)
-  count = reg_ids.count
-  INFO("Notification send to #{count} <span onClick='javascript:popup(this, \""+reg_ids.join(',<br>')+"\")'>device(s)</span><br>\n")
-  return {:status => response[:response]}
-end
-
-# TODO: This should not exist in the final version
-def get_or_post(path, opts={}, &block)
-  get(path, opts, &block)
-  post(path, opts, &block)
-end
-
+GCM_API_KEY = 'AIzaSyAf5B_Kmh7krNaz27OmNuPH1OZ2qy1WUzs'
 
 class Earshot < Sinatra::Base
+
+  # TODO: This should not exist in the final version
+  def get_or_post(path, opts={}, &block)
+    get(path, opts, &block)
+    post(path, opts, &block)
+  end
+
+  def INFO(s)
+    open(File.dirname(__FILE__) + '/public/appLog.html', 'a') { |f|
+      f.puts(Time.new.strftime("%Y-%m-%d %H:%M:%S\tINFO\t")+s)
+    }
+  end
+
+  def sendNotification(db, userId, message)
+    gcm = GCM.new(GCM_API_KEY)
+    rows = db.execute('select deviceId from deviceRegistrations where userId = ?', userId)
+    reg_ids = []
+    rows.each do |row|
+      reg_ids.push(row[0])
+    end
+    options = {:data => {:message => message.to_json}}
+    response = gcm.send_notification(reg_ids, options)
+    count = reg_ids.count
+    INFO("Notification send to #{count} <span onClick='javascript:popup(this, \""+reg_ids.join(',<br>')+"\")'>device(s)</span><br>\n")
+    return {:status => response[:response]}
+  end
 
   dbFile = File.dirname(__FILE__) + "/db/data.db"
 

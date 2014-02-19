@@ -1,0 +1,117 @@
+# Logfile created on 2014-02-14 00:32:22 -0800 by logger.rb/31641
+D, [2014-02-14 00:32:22 #37502] DEBUG -- : Controller initialized
+I, [2014-02-14 00:32:22 #37502]  INFO -- : strozek@gmail.com attempting to sign in
+I, [2014-02-14 00:32:22 #37502]  INFO -- : User id is 6
+D, [2014-02-14 00:32:22 #37502] DEBUG -- : Controller closed.
+D, [2014-02-14 00:32:31 #37503] DEBUG -- : Controller initialized
+I, [2014-02-14 00:32:31 #37503]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-14 00:32:31 #37503] DEBUG -- : Controller closed.
+D, [2014-02-14 00:32:36 #37504] DEBUG -- : Controller initialized
+I, [2014-02-14 00:32:36 #37504]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-14 00:32:36 #37504] DEBUG -- : Controller closed.
+D, [2014-02-14 00:32:39 #37505] DEBUG -- : Controller initialized
+I, [2014-02-14 00:32:39 #37505]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-14 00:32:39 #37505] DEBUG -- : Controller closed.
+D, [2014-02-14 00:32:40 #37506] DEBUG -- : Controller initialized
+I, [2014-02-14 00:32:40 #37506]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+I, [2014-02-14 00:32:40 #37506]  INFO -- : User strozek@gmail.com fetching feedback
+D, [2014-02-14 00:32:40 #37506] DEBUG -- : Controller closed.
+D, [2014-02-14 00:32:42 #37507] DEBUG -- : Controller initialized
+I, [2014-02-14 00:32:42 #37507]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-14 00:32:42 #37507] DEBUG -- : Controller closed.
+D, [2014-02-14 00:32:43 #37508] DEBUG -- : Controller initialized
+I, [2014-02-14 00:32:43 #37508]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+I, [2014-02-14 00:32:43 #37508]  INFO -- : User strozek@gmail.com fetching feedback
+D, [2014-02-14 00:32:43 #37508] DEBUG -- : Controller closed.
+D, [2014-02-14 00:32:45 #37509] DEBUG -- : Controller initialized
+I, [2014-02-14 00:32:45 #37509]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-14 00:32:45 #37509] DEBUG -- : Controller closed.
+D, [2014-02-14 00:33:51 #37511] DEBUG -- : Controller initialized
+I, [2014-02-14 00:33:51 #37511]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-14 00:33:51 #37511] DEBUG -- : Controller closed.
+D, [2014-02-14 00:33:59 #37521] DEBUG -- : Controller initialized
+I, [2014-02-14 00:33:59 #37521]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-14 00:33:59 #37521] DEBUG -- : Controller closed.
+D, [2014-02-14 00:34:01 #37522] DEBUG -- : Controller initialized
+I, [2014-02-14 00:34:01 #37522]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-14 00:34:01 #37522] DEBUG -- : Controller closed.
+D, [2014-02-14 00:34:02 #37523] DEBUG -- : Controller initialized
+I, [2014-02-14 00:34:02 #37523]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+I, [2014-02-14 00:34:02 #37523]  INFO -- : User strozek@gmail.com fetching feedback
+D, [2014-02-14 00:34:02 #37523] DEBUG -- : Controller closed.
+D, [2014-02-14 00:34:04 #37524] DEBUG -- : Controller initialized
+I, [2014-02-14 00:34:04 #37524]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-14 00:34:04 #37524] DEBUG -- : Controller closed.
+D, [2014-02-18 17:23:50 #40690] DEBUG -- : Controller initialized
+I, [2014-02-18 17:23:50 #40690]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:23:50 #40690] DEBUG -- : Controller closed.
+D, [2014-02-18 17:24:00 #40700] DEBUG -- : Controller initialized
+I, [2014-02-18 17:24:00 #40700]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:24:00 #40700] DEBUG -- : Controller closed.
+D, [2014-02-18 17:24:04 #40701] DEBUG -- : Controller initialized
+I, [2014-02-18 17:24:04 #40701]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:24:04 #40701] DEBUG -- : Controller closed.
+D, [2014-02-18 17:24:05 #40702] DEBUG -- : Controller initialized
+I, [2014-02-18 17:24:05 #40702]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+I, [2014-02-18 17:24:05 #40702]  INFO -- : User strozek@gmail.com fetching feedback
+D, [2014-02-18 17:24:05 #40702] DEBUG -- : Controller closed.
+D, [2014-02-18 17:24:07 #40703] DEBUG -- : Controller initialized
+I, [2014-02-18 17:24:07 #40703]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:24:07 #40703] DEBUG -- : Controller closed.
+D, [2014-02-18 17:24:08 #40704] DEBUG -- : Controller initialized
+I, [2014-02-18 17:24:08 #40704]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+I, [2014-02-18 17:24:08 #40704]  INFO -- : User strozek@gmail.com fetching feedback
+D, [2014-02-18 17:24:08 #40704] DEBUG -- : Controller closed.
+D, [2014-02-18 17:24:23 #40705] DEBUG -- : Controller initialized
+I, [2014-02-18 17:24:23 #40705]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:24:23 #40705] DEBUG -- : Controller closed.
+D, [2014-02-18 17:24:32 #40706] DEBUG -- : Controller initialized
+I, [2014-02-18 17:24:32 #40706]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:24:32 #40706] DEBUG -- : Controller closed.
+D, [2014-02-18 17:24:53 #40707] DEBUG -- : Controller initialized
+I, [2014-02-18 17:24:53 #40707]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:24:53 #40707] DEBUG -- : Controller closed.
+D, [2014-02-18 17:27:17 #40709] DEBUG -- : Controller initialized
+I, [2014-02-18 17:27:18 #40709]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:27:18 #40709] DEBUG -- : Controller closed.
+D, [2014-02-18 17:29:11 #40710] DEBUG -- : Controller initialized
+I, [2014-02-18 17:29:11 #40710]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:29:11 #40710] DEBUG -- : Controller closed.
+D, [2014-02-18 17:29:23 #40721] DEBUG -- : Controller initialized
+I, [2014-02-18 17:29:24 #40721]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:29:24 #40721] DEBUG -- : Controller closed.
+D, [2014-02-18 17:29:28 #40722] DEBUG -- : Controller initialized
+I, [2014-02-18 17:29:28 #40722]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+I, [2014-02-18 17:29:28 #40722]  INFO -- : Admin strozek@gmail.com changing everyone scope to 1
+I, [2014-02-18 17:29:28 #40722]  INFO -- : Changed everyone scope to 1
+D, [2014-02-18 17:29:28 #40722] DEBUG -- : Controller closed.
+D, [2014-02-18 17:29:31 #40724] DEBUG -- : Controller initialized
+I, [2014-02-18 17:29:31 #40724]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:29:31 #40724] DEBUG -- : Controller closed.
+D, [2014-02-18 17:31:33 #40736] DEBUG -- : Controller initialized
+I, [2014-02-18 17:31:33 #40736]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:31:33 #40736] DEBUG -- : Controller closed.
+D, [2014-02-18 17:31:51 #40746] DEBUG -- : Controller initialized
+I, [2014-02-18 17:31:51 #40746]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+I, [2014-02-18 17:31:51 #40746]  INFO -- : Admin strozek@gmail.com changing everyone scope to 0
+I, [2014-02-18 17:31:51 #40746]  INFO -- : Changed everyone scope to 0
+D, [2014-02-18 17:31:51 #40746] DEBUG -- : Controller closed.
+D, [2014-02-18 17:31:53 #40747] DEBUG -- : Controller initialized
+I, [2014-02-18 17:31:53 #40747]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:31:53 #40747] DEBUG -- : Controller closed.
+D, [2014-02-18 17:32:02 #40757] DEBUG -- : Controller initialized
+I, [2014-02-18 17:32:02 #40757]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+I, [2014-02-18 17:32:02 #40757]  INFO -- : Admin strozek@gmail.com changing recipient scope to 1
+I, [2014-02-18 17:32:02 #40757]  INFO -- : Changed recipient scope to 1
+D, [2014-02-18 17:32:02 #40757] DEBUG -- : Controller closed.
+D, [2014-02-18 17:32:04 #40758] DEBUG -- : Controller initialized
+I, [2014-02-18 17:32:04 #40758]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:32:04 #40758] DEBUG -- : Controller closed.
+D, [2014-02-18 17:32:12 #40768] DEBUG -- : Controller initialized
+I, [2014-02-18 17:32:12 #40768]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+I, [2014-02-18 17:32:12 #40768]  INFO -- : Admin strozek@gmail.com changing recipient scope to 0
+I, [2014-02-18 17:32:12 #40768]  INFO -- : Changed recipient scope to 0
+D, [2014-02-18 17:32:12 #40768] DEBUG -- : Controller closed.
+D, [2014-02-18 17:32:14 #40769] DEBUG -- : Controller initialized
+I, [2014-02-18 17:32:14 #40769]  INFO -- : Fetched user with id 6 and email strozek@gmail.com
+D, [2014-02-18 17:32:14 #40769] DEBUG -- : Controller closed.
