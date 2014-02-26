@@ -1,5 +1,0 @@
-#!/bin/sh
-sudo /etc/init.d/thin stop
-sudo rm /etc/thin/*
-sudo ln -s `pwd`/config/strozek-`whoami`.yml /etc/thin/ 
-sudo /etc/init.d/thin start

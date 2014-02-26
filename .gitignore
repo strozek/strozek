@@ -1,2 +1,5 @@
-log/*
-tmp/pids/*
+*-NO-GIT.rb
+data/crowdsource.db
+data/crowdsource.lock
+public/js/people.js
+public/images/people

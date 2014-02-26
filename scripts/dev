@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if [ -e tmp/pids/shotgun.pid ]
-  then
-    sudo kill `cat tmp/pids/shotgun.pid`
-fi
-sudo nohup shotgun config.ru -s thin -o 0.0.0.0 -p 80 -E development > log/nohup.out 2>&1 &
-sleep 3
-ps -A | egrep 'shotgun[ ]config.ru.*-p 80' | awk '{print $1}' > tmp/pids/shotgun.pid

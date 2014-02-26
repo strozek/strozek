@@ -1,9 +1,0 @@
-salt-NO-GIT.rb
-data/crowdsource.db
-data/crowdsource.lock
-data/crowdsource.log
-data/crowdsource.png
-scripts/people-original.js
-scripts/userlist.txt
-public/images/people
-public/js/people.js
