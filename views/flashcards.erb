@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="user-scalable=no, width=device-width" />
+  <meta name="description" content="">
+  <title>onegsb flashcards</title>
+  <link rel="stylesheet" href="css/smoothness/jquery-ui-1.10.2.custom.css" />
+  <script src="js/jquery-1.9.1.js"></script>
+  <script src="js/jquery-ui-1.10.2.custom.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <style>
+    body { text-align: center; }
+    #container { margin-top: 20px; }
+    #slider-range { width: 300px; margin: 10px auto; }
+    #controls { text-align: center; }
+    #person { font-size: 18px; font-weight: bold; }
+    #amount { border: 0; color: #f6931f; font-weight: bold; width: 70px; text-align: center; }
+    #attempts { color: #f6931f; font-weight: bold; }
+    #remaining { border: 0; color: #f6931f; font-weight: bold; width: 50px; text-align: center; }
+    #debug { text-align: left; font-size: 10px; position:absolute; top:0px; left:5px; background:#ffff55; font-family:courier; height: 500px; overflow: scroll; }
+  </style>
+  <script src="js/people.js"></script>
+</head>
+<body>
+<div id="container">
+  <div id="controls">
+      <label for="amount">Viewing images </label> 
+      <input type="text" id="amount"/><br>
+      <label for="remaining">Remaining </label>
+      <input type="text" id="remaining"/>
+    <div id="slider-range"></div>
+    <br>
+  </div>
+  <div id="picture"></div>
+  <br>
+  <div id="person">&nbsp;</div>
+  <div id="attempts">&nbsp;</div>
+  <br/>
+  <button onclick="press('u')"><u>u</u>nmute</button>
+  <button onclick="press('y')"><u>y</u>es</button>
+  <button onclick="press('n')"><u>n</u>o</button>
+</div>
+<div id="debug"></div>
+</body>
+
+<script language="javascript">
+
+  var muted = true;
+  var quizzing = false;
+  var waiting = false;
+  var completed = false;
+  var orders = [];
+  var minValue = 0;
+  var maxValue = people.length-1; // inclusive
+  var current = 0;
+  var attempts = [];
+
+  var pressHandler = function(event) {
+    if(event.which == "u".charCodeAt(0))
+    {
+      muted = false;
+      startQuiz();
+      return;
+    }
+    if(completed)
+    {
+      return;
+    }
+    if(waiting)
+    {
+      debug("done waiting");
+      waiting = false;
+      ++current;
+      checkBoundary();
+      startQuiz();
+      return;
+    }
+    if(!quizzing) return;
+    if(event.which == "y".charCodeAt(0))
+    {
+      var i = orders[current];
+      var name = people[i].replace(".jpg","");
+      $("#person").html(name);
+      $("#attempts").html(attempts[i]==undefined ? "&nbsp;" : 
+        (""+attempts[i]+" attempt"+(attempts[i]==1?"":"s")+"."));
+      setTimeout(nextImage, 300);
+    }
+    else
+    {
+      debug("incorrect");
+      var i = orders[current];
+      var name = people[i].replace(".jpg","");
+      $("#person").html(name);
+      $("#attempts").html(attempts[i]==undefined ? "&nbsp;" : 
+        (""+attempts[i]+" attempt"+(attempts[i]==1?"":"s")+"."));
+      if(attempts[i]==undefined) attempts[i] = 0;
+      ++attempts[i];
+      quizzing = false;
+      waiting = true;
+    }
+  };
+
+  function press(c)
+  {
+    var e = [];
+    e.which = c.charCodeAt(0);
+    pressHandler(e);
+  }
+
+  $(document).keypress(pressHandler);
+
+  $(document).ready(function() {
+    
+    $("button").button();
+
+    $("#slider-range").slider({
+      range: true,
+      min: 0,
+      max: people.length,
+      step: 20,
+      values: [0, people.length],
+      slide: function(event, ui) {
+        minValue = ui.values[0];
+        maxValue = ui.values[1];
+        if(minValue==maxValue)
+          $("#amount").value("[none]");
+        else
+          $("#amount").val("" + minValue + " - " + (maxValue-1));
+        resetPermutation();
+        if(!muted) startQuiz();
+      }
+    });
+    $("#amount").val("0 - " + (people.length-1));
+    resetPermutation();
+    if(!muted) startQuiz();
+  });
+
+  function nextImage() {
+    debug("correct");
+    orders.splice(current, 1);
+    checkBoundary();
+    startQuiz();
+    $("#remaining").val(orders.length);
+  }
+
+  function debug(s) {
+    return;
+    var val = document.getElementById("debug").innerHTML;
+    $("#debug").html(s + "<br>" + val);
+  }
+
+  function checkBoundary() {
+    if(orders.length==0)
+    {
+      completed = true;
+      return;
+    }
+    if(current>=orders.length)
+    {
+      current = 0;
+      permute(orders);
+    }
+  }
+
+  function startQuiz() {
+    $("#person").html('&nbsp;');
+    $("#attempts").html('&nbsp;');
+    if(completed)
+    {
+      $("#picture").html('all done!');
+      return;
+    }
+    var i = orders[current];
+    $("#picture").html('<img height=250 src="images/people/' + people[i] + '">');
+    quizzing = true;
+  }
+
+  function resetPermutation() {
+    orders = [];
+    for(var i=0; i<maxValue-minValue; ++i) {
+      orders[i] = i+minValue;
+    }
+    $("#remaining").val(orders.length);
+    if(orders.length==0)
+    {
+      completed = true;
+      return;
+    }
+    permute(orders);
+    completed = false;
+    quizzing = false;
+    waiting = false;
+  }
+
+  function permute(myArray) {
+    var i = myArray.length, j, tempi, tempj;
+    if (i===0) return false;
+    while (--i) {
+      j = Math.floor(Math.random() * (i + 1));
+      tempi = myArray[i];
+      tempj = myArray[j];
+      myArray[i] = tempj;
+      myArray[j] = tempi;
+    }
+  }
+
+</script>
+
+</html>
