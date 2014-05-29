@@ -72,6 +72,9 @@ class Strozek < Sinatra::Base
 	get '/fire', :host_name => @host do
 		erb :fire
 	end
+	get '/luck', :host_name => @host do
+		erb :luck
+	end
 	get '/crowdsource', :host_name => @host do
 		erb :crowdsource
 	end
