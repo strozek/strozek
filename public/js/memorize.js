@@ -67,6 +67,7 @@ var entities = [
 ["Grosse Pointe Blank, facts", "Debi: You're a fucking *psycho*. Marty: Don't rush to judgment on something like that until all the facts are in"],
 ["Grosse Pointe Blank, cat", "Marty: Well, you don't know my cat, it's very demanding. Debi: It? You don't know if it's a boy or girl? / Marty: I respect its privacy"],
 ["Grosse Points Blank, shakabuku", "You know what you need? Shakabuku. It's a swift, spiritual kick to the head that alters your reality forever."],
+["Personal intro, funny", "I'm married so I'm not looking"],
 
 // Business concepts
 ["What is selling", "People buy what you believe in, not what you’re selling. The most successful vendors say why, then how, then what."],
