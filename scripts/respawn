@@ -1,0 +1,15 @@
+#!/bin/bash
+
+ps -aux | grep 'unicorn.*root' | grep -v grep | awk '{print $2"\t"$12}'
+if [ -e /opt/bitnami/apps/root/tmp/pids/unicorn.pid ]; then
+    pid=`cat /opt/bitnami/apps/root/tmp/pids/unicorn.pid`
+    echo "unicorn pid is $pid"
+    if [[ $pid ]]; then
+        echo "Killing $pid"
+        kill -WINCH $pid
+        sleep 2
+        kill -QUIT $pid
+        sleep 2
+    fi
+fi
+unicorn -c /opt/bitnami/apps/root/unicorn.rb -E production -D

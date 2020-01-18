@@ -1,5 +1,5 @@
-*-NO-GIT.rb
+.DS_Store
 data/crowdsource.db
 data/crowdsource.lock
-public/js/people.js
-public/images/people
+log/*
+config/secrets
