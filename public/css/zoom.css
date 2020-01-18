@@ -1,6 +1,0 @@
-#canvas {}
-.image:hover, .boundingBox:hover, .imageWideMargin:hover {border: 1px solid #bb0000;}
-.image {border: 1px solid #555555;}
-.slideshow {position:relative;overflow:hidden;left:25px;width:300px;height:100px;}
-.slide {position:absolute;display:none;}
-.caption {position:absolute;width:100px;text-align:center;}
