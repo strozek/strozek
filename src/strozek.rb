@@ -1,4 +1,10 @@
-require './config/secrets/SESSION_SECRET.rb'
+require './config/secrets/SESSION_SECRET.rb'	# secret
+
+require 'sinatra/base'
+RMAGICK_BYPASS_VERSION_TEST = true 	# this should not be required, but on production I can't get rid of a version mismatch
+require 'RMagick'
+require 'sequel'
+require './src/crowdsource.rb'
 
 Rack::Mime::MIME_TYPES.merge!({
   ".ogg"     => "application/ogg",
@@ -11,12 +17,6 @@ Rack::Mime::MIME_TYPES.merge!({
   ".mp3"     => "audio/mpeg",
   ".m4a"     => "audio/mpeg"
 })
-
-require 'sinatra/base'
-require 'RMagick'
-require 'sequel'
-require './src/disappearing.rb'
-require './src/crowdsource.rb'
 
 class Strozek < Sinatra::Base
 
@@ -58,18 +58,19 @@ class Strozek < Sinatra::Base
 	end
 
 	get '/disappear/bw/:text' do
-		content_type 'image/png'
-		image = Disappearing::GenerateBWDisappearingImage(params[:text])
-		image.to_blob()
-	end
-	get '/disappear/color/:text/:distraction' do
-		content_type 'image/png'
-		image = Disappearing::GenerateColorDisappearingImage(params[:text], params[:distraction])
-		image.to_blob()
+		erb :disappear_bw, :locals => {:message => params[:text].gsub(/"/, '\\"')}
 	end
 
-	#@host = /loveandmathematics.us/
+	get '/disappear/color/:text/:distraction' do
+		erb :disappear_color, :locals => {:message => params[:text].gsub(/"/, '\\"'), :distraction => params[:distraction].gsub(/"/, '\\"')}
+	end
+
 	get '/loveandmath' do
+		erb :loveandmath
+	end
+
+	@host = /loveandmathematics.us/
+	get '/', :host_name => @host do
 		erb :loveandmath
 	end
 

@@ -1,0 +1,65 @@
+<canvas id="canvas">
+</canvas>
+<script language="javascript">
+
+	var ALPHA = 0.299;
+    var BETA = 0.587;
+    var GAMMA = 1-ALPHA-BETA;
+    var message = "<%= message %>";
+
+	function intensity(data, i)
+	{
+		return (data[i*4]*0.299 + data[i*4+1]*0.587 + data[i*4+2]*0.110) / 255;
+	}
+
+	function findGrayColor(i, x, y)
+	{
+        var alpha = ALPHA*1000.0+Math.random()*25-12;
+        var beta = BETA*1000.0+Math.random()*25-12;
+        var gamma = 1000.0-alpha-beta;
+        var ratio = (alpha-gamma)/beta;
+        var c = new Array();
+        if ((x%8<4) ^ (y%8<4)) {
+          c.r = (0.37+i/3.0)*255;
+          c.g = (0.62-i*ratio/3.0)*255;
+          c.b = (0.8-i/3.0)*255;
+      	}
+        else {
+          c.r = (0.44+i/3.0)*255;
+          c.g = (0.62-i*ratio/3.0)*255;
+          c.b = (0.9-i/3.0)*255;
+        }
+        return c;
+	}
+
+	var canvas = document.getElementById('canvas');
+	var c = canvas.getContext('2d');
+	c.font = "80px Arial";
+	var width = parseInt(c.measureText(message).width + 20);
+	var height = parseInt(c.measureText(message).actualBoundingBoxAscent + c.measureText(message).actualBoundingBoxDescent + 20);
+	canvas.width = width;
+	canvas.height = height;
+
+	c.fillStyle = "#ffffff";
+	c.fillRect(0, 0, width, height);
+	c.font = "80px Arial";
+	c.fillStyle = "#000000";
+	c.textAlign = "center";
+	c.textBaseline = "middle";
+	c.fillText(message, width/2, height/2);
+
+	imageData = c.getImageData(0, 0, width, height);
+	data = imageData.data;
+	for(var y=0; y<height; ++y) {
+		for(var x=0; x<width; ++x) {
+			i = intensity(data, y*width+x);
+			i = Math.random()*0.33 + i*0.33 + 0.33;
+			grayColor = findGrayColor(i, x, y);
+			data[(y*width+x)*4] = grayColor.r;
+			data[(y*width+x)*4+1] = grayColor.g;
+			data[(y*width+x)*4+2] = grayColor.b;
+			data[(y*width+x)*4+3] = 255;
+		}
+	}
+	c.putImageData(imageData, 0, 0);
+</script>

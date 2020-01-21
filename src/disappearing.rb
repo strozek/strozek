@@ -46,7 +46,7 @@ module StrozekHelpers
 
       def GetTextMetrics(str)
         text = Magick::Draw.new
-        text.font = 'Bookman-Demi'
+        text.font = 'URW-Bookman-L-Demi-Bold'
         text.pointsize = 40
         text.gravity = Magick::CenterGravity
         return text.get_type_metrics(str)
@@ -54,7 +54,7 @@ module StrozekHelpers
 
       def MakeText(image, str, verticalOffset)
         text = Magick::Draw.new
-        text.font = 'Bookman-Demi'
+        text.font = 'URW-Bookman-L-Demi-Bold'
         text.pointsize = 40
         text.gravity = Magick::CenterGravity
         text.annotate(image, 0, 0, 0, verticalOffset, str) {self.fill = 'white'}
@@ -166,8 +166,6 @@ module StrozekHelpers
         end
         grayText.format = "PNG"
         return grayText
-        #mask.format = "PNG"
-        #return mask
       end
     end
   end

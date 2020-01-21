@@ -1,4 +1,4 @@
-require './config/secrets/SALT.rb'
+require './config/secrets/SALT.rb'	# secret
 
 class Strozek < Sinatra::Base
 

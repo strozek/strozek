@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cat version.txt | ruby -e 'v = STDIN.read.split(/\./); v[2]=((v[2].to_i)+1).to_s; puts v.join(".")' > version-new.txt
+mv -f version-new.txt version.txt
+scp -r config config.ru public scripts src unicorn.rb version.txt views strozek.com:apps/root/ 

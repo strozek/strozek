@@ -1,0 +1,213 @@
+<canvas id="canvas">
+</canvas>
+<script language="javascript">
+
+	var ALPHA = 0.299;
+    var BETA = 0.587;
+    var GAMMA = 1-ALPHA-BETA;
+    var message = "<%= message %>";
+    var distraction = "<%= distraction %>";
+
+	function intensity(data, i)
+	{
+		return (data[i*4]*0.299 + data[i*4+1]*0.587 + data[i*4+2]*0.110) / 255;
+	}
+
+	function pixelColor(data, i)
+	{
+		var result = [];
+		result.r = data[i*4];
+		result.g = data[i*4+1];
+		result.b = data[i*4+2];
+		return result;
+	}
+
+	// r, g, b are between 0 and 1
+	// returns array [h, s, l], each between 0 and 1
+	function rgbToHsl(r, g, b)
+	{
+	  var max = Math.max(r, g, b), min = Math.min(r, g, b);
+	  var h, s, l = (max + min) / 2;
+
+	  if (max == min) {
+	    h = s = 0; // achromatic
+	  } else {
+	    var d = max - min;
+	    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+	    switch (max) {
+	      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+	      case g: h = (b - r) / d + 2; break;
+	      case b: h = (r - g) / d + 4; break;
+	    }
+
+	    h /= 6;
+	  }
+
+	  return [ h, s, l ];
+	}
+
+	// h, s, l are between 0 and 1
+	// returns array [r, g, b], each between 0 and 1
+	function hslToRgb(h, s, l)
+	{
+	  var r, g, b;
+
+	  if (s == 0) {
+	    r = g = b = l; // achromatic
+	  } else {
+	    function hue2rgb(p, q, t) {
+	      if (t < 0) t += 1;
+	      if (t > 1) t -= 1;
+	      if (t < 1/6) return p + (q - p) * 6 * t;
+	      if (t < 1/2) return q;
+	      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+	      return p;
+	    }
+
+	    var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+	    var p = 2 * l - q;
+
+	    r = hue2rgb(p, q, h + 1/3);
+	    g = hue2rgb(p, q, h);
+	    b = hue2rgb(p, q, h - 1/3);
+	  }
+
+	  return [ r, g, b ];
+	}
+
+	function makeMask(width, height)
+	{
+        var mask = new ImageData(width, height);
+        var i = 0.3;
+        for(var y=0; y<height; ++y) {
+        	for(var x=0; x<width; ++x) {
+	            var alpha = ALPHA+(Math.random()*25-12)/1000.0;
+	            var beta = BETA+(Math.random()*25-12)/1000.0;
+	            var gamma = 1.0-alpha-beta;
+	            var gmin = Math.max((i-gamma-alpha)/beta, 0);
+	            var gmax = i/beta;
+	            var g = (gmax*x+gmin*(width-x-1))/(1.0*(width-1));
+	            var rmin = Math.max((i-beta*g-gamma)/alpha, 0);
+	            var rmax = Math.max((i-beta*g)/alpha, 0);
+	            var r = (rmax*y+rmin*(height-y-1))/(1.0*(height-1));
+	            var b = (i-alpha*r-beta*g)/gamma;
+	            if(b<0) {
+	              r = 0;
+	              g = 0;
+	              b = 0;
+	            }
+	            hsl = rgbToHsl(r, g, b);
+	            if(hsl[2]>0.3) {
+	              hsl[2] = ((((hsl[2]-0.3)/0.35)**0.8)*0.2+0.3);
+	            }
+	            c2 = hslToRgb(hsl[0], hsl[1], hsl[2]);
+	            mask.data[(x+y*width)*4] = c2[0]*255;
+	            mask.data[(x+y*width)*4+1] = c2[1]*255;
+	            mask.data[(x+y*width)*4+2] = c2[2]*255;
+	            mask.data[(x+y*width)*4+3] = 255;
+        	}
+        }
+        return mask;
+	}
+
+	function findMaskColor(mask, i)
+	{
+        var success = false;
+        var x1 = parseInt(mask.width*0.08);
+        var x2 = parseInt(mask.width*0.54);
+        var x3 = parseInt(mask.width*0.78);
+        var y = parseInt(mask.height*0.47);
+        while(success==false) {
+          var xm = parseInt(Math.random()*(x3-x1));
+          var ym = parseInt(Math.random()*y);
+          if(xm<=(x2-x1) && ym>xm*(y/(x2-x1))) {
+            xm = (x2-x1)-xm;
+            ym = y-ym;
+          }
+          if(xm>(x2-x1) && ym>((x3-x1)-xm)*(y/(x3-x2))) {
+            xm = x3+x2-xm-2*x1;
+            ym = y-ym;
+          }
+          xm += x1;
+          var im = intensity(mask.data, xm+ym*mask.width);
+          if(Math.abs(i-im) < 0.09) {
+            success = true;
+          }
+        }
+        return pixelColor(mask.data, xm+ym*mask.width);
+	}
+
+	function findDistractionColor(c, i)
+	{
+        var success = false;
+        while(success==false) {
+          var red = (Math.random()*0.25-0.03)*255;
+          if(c.r+red<0) {
+            red = -c.r;
+          }
+          if(c.r+red>255) {
+            red = 255-c.r;
+          }
+          var green = (Math.random()*0.25-0.03)*255;
+          if(c.g+green<0) {
+            green = -c.g;
+          }
+          if(c.g+green>255) {
+            green = 255-c.g;
+          }
+          var blue = -(red*ALPHA+green*BETA)/GAMMA;
+          success = (c.b+blue>=0 && c.b+blue<=255);
+        }
+        var result = [];
+        result.r = c.r+red*i;
+        result.g = c.g+green*i;
+        result.b = c.b+blue*i;
+        return result;
+	}
+
+	var canvas = document.getElementById('canvas');
+	var c = canvas.getContext('2d');
+	c.font = "80px Arial";
+	var width = parseInt(Math.max(c.measureText(message).width, c.measureText(distraction).width) + 20);
+	var height = parseInt(Math.max(c.measureText(message).actualBoundingBoxAscent + c.measureText(message).actualBoundingBoxDescent, c.measureText(distraction).actualBoundingBoxAscent + c.measureText(distraction).actualBoundingBoxDescent) + 20);
+	canvas.width = width;
+	canvas.height = height;
+
+	var mask = makeMask(width, height);
+
+	c.fillStyle = "#ffffff";
+	c.fillRect(0, 0, width, height);
+	c.font = "80px Arial";
+	c.fillStyle = "#000000";
+	c.textAlign = "center";
+	c.textBaseline = "middle";
+	c.fillText(message, width/2, height/2);
+	messageImageData = c.getImageData(0, 0, width, height);
+	messageData = messageImageData.data;
+
+	c.fillStyle = "#ffffff";
+	c.fillRect(0, 0, width, height);
+	c.fillStyle = "#000000";
+	c.fillText(distraction, width/2, height/2);
+	distractionImageData = c.getImageData(0, 0, width, height);
+	distractionData = distractionImageData.data;
+
+	for(var y=0; y<height; ++y) {
+		for(var x=0; x<width; ++x) {
+			var i = intensity(messageData, y*width+x);
+			i = (1-i)*0.08 + 0.18;
+
+			var c2 = findMaskColor(mask, i);
+			var di = intensity(distractionData, y*width+x);
+            
+            var dc = findDistractionColor(c2, di);
+                                    
+			messageData[(y*width+x)*4] = dc.r;
+			messageData[(y*width+x)*4+1] = dc.g;
+			messageData[(y*width+x)*4+2] = dc.b;
+			messageData[(y*width+x)*4+3] = 255;
+		}
+	}
+	c.putImageData(messageImageData, 0, 0);
+</script>

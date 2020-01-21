@@ -3,3 +3,4 @@ data/crowdsource.db
 data/crowdsource.lock
 log/*
 config/secrets
+version.txt
