@@ -38,10 +38,12 @@ class Strozek < Sinatra::Base
 	end
 
 	get '/dice' do
+		headers({ 'X-Frame-Options' => '' })
 		erb :dice
 	end
 
 	get '/fire' do
+		headers({ 'X-Frame-Options' => '' })
 		erb :fire
 	end
 
@@ -54,14 +56,17 @@ class Strozek < Sinatra::Base
 	end
 
 	get '/zoom' do
+		headers({ 'X-Frame-Options' => '' })
 		erb :zoom
 	end
 
 	get '/disappear/bw/:text' do
+		headers({ 'X-Frame-Options' => '' })
 		erb :disappear_bw, :locals => {:message => params[:text].gsub(/"/, '\\"')}
 	end
 
 	get '/disappear/color/:text/:distraction' do
+		headers({ 'X-Frame-Options' => '' })
 		erb :disappear_color, :locals => {:message => params[:text].gsub(/"/, '\\"'), :distraction => params[:distraction].gsub(/"/, '\\"')}
 	end
 
