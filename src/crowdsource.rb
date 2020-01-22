@@ -257,8 +257,7 @@ module StrozekHelpers
 		
 		def makeImage
 		  image = Image.new(WIDTH, HEIGHT)
-		  image.transparent_color = 'white'
-		  image = image.transparent('white')
+		  image.matte_reset!
 		  image.format = "PNG"
 		  @db[:pixels].each { |row|
 		    x = row[:location]%67
