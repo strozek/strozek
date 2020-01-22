@@ -1,6 +1,5 @@
 .DS_Store
-data/crowdsource.db
-data/crowdsource.lock
+data/*
 log/*
 config/secrets
 version.txt
