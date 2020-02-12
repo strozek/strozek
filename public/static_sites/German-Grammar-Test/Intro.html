@@ -1,0 +1,76 @@
+<body background="Images/body.gif">
+<font face=arial>
+<br><br><center><img src="Images/header.gif"></center><br><br>
+<script language=javascript>
+<!--
+	var MAGIC = '%%^';
+
+	function LogOn()
+	{
+		user=document.all['name'].value;
+		if(user=='') return;
+		s='';
+		if(document.all['teston1'].checked) s+='1'; else s+='0';
+		if(document.all['teston2'].checked) s+='1'; else s+='0';
+		if(document.all['teston3'].checked) s+='1'; else s+='0';
+		document.cookie=MAGIC+'A'+user+MAGIC+'B'+s+MAGIC+'C'+lastscore;
+		document.location='continue.html';
+	}
+
+	function NoLogOn()
+	{
+		document.cookie='';
+		document.location='continue.html';
+	}
+
+	function CheckName()
+	{
+		user=document.all['name'].value;
+		if(user=='') document.images['lo'].src='Images/logondark.gif'; 
+		else document.images['lo'].src='Images/logon.gif';
+	}
+
+	setInterval("CheckName()",100);
+	x=document.cookie.indexOf(MAGIC+'A');
+	y=document.cookie.indexOf(MAGIC+'B');
+	z=document.cookie.indexOf(MAGIC+'C');
+	if(x>=0 && y>=0) user=document.cookie.substr(x+4,y-4); else user='';
+	if(z>=0) lastscore=parseInt(document.cookie.substring(z+4)); else lastscore=0;
+
+	if(user!='')
+	{
+		document.write('<font size=5>Hello, '+user+'<br></font>');
+		document.write('<font color=#000000>You have logged on to the system. If you want to continue, click on <b><font color=#ff0000>Logon</font></b> button below. If you want to change user, use the field below.</font><br>');
+	}
+	else document.write('<font color=#000000>If you want to log on to our system and record your progress, you can write your name in the box below. It can be a real name or a nickname - anything. The information you receive will be available only to you.</font><br>');
+
+	document.write('<center><form name=Login><b>Type in your name:</b> <input type=text style="font-family:verdana; color:#ffffff; background-color:#000000" name=name><br><br>');
+	document.write('<img name=lo onClick="LogOn()" style="cursor:hand" src="Images/logon.gif">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+	document.write('<img onClick="NoLogOn()" style="cursor:hand" src="Images/nologon.gif">');
+	document.write('</form><br><br>Here you can tick what you want to be tested on:<br><br>');
+	document.write('<table border=0><tr><td><input type=checkbox name=teston1></input></td><td>Verb Forms</td></tr>');
+	document.write('<tr><td><input type=checkbox name=teston2></input></td><td>Articles and Pronouns</td></tr>');
+	document.write('<tr><td><input type=checkbox name=teston3></input></td><td>Adjectival Endings</td></tr></table>');
+	document.write('</center>');
+
+	if(user!='')
+	{
+		document.all['name'].value=user;	
+	}
+
+	if(y>=0) 
+	{	
+		document.all['teston1'].checked=(document.cookie.charAt(y+4)=='1');
+		document.all['teston2'].checked=(document.cookie.charAt(y+5)=='1');
+		document.all['teston3'].checked=(document.cookie.charAt(y+6)=='1');
+	}
+	else 
+	{
+		document.all['teston1'].checked=true;
+		document.all['teston2'].checked=true;
+		document.all['teston3'].checked=true;
+	}
+
+//-->
+</script>
+</body>

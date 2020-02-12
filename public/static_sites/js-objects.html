@@ -1,0 +1,204 @@
+<head>
+	<style>
+		body {margin:0px; font-family:palatino linotype}
+		.shortDescription {background:#00ff00; border:medium solid #000000; border-width:1; text-align:center}
+		.longDescription {background:#66ff66; border:medium solid #ff0000; border-width:1; text-align:center}
+		.draggableItem {border:medium solid #ff0000; border-width:1; position:relative; text-align:center; font-weight:bold}
+		.draggableTarget {background:#ccccff; border:medium solid #0000ff; border-width:1; text-align:center; color:#ffffff}
+		.legendTable {border:medium solid #888888; border-width:1; text-align:center; color:#000088; font-size:12}
+	</style>
+	<script language='javascript' src='common.js'></script>
+	<script language='javascript' src='draggableObjects.js'></script>
+	<script language='javascript' src='expandingObjects.js'></script>
+	<script language='javascript' src='gridObjects.js'></script>
+	<script language='javascript' src='utility.js'></script>
+</head>
+
+<body onload='disableSelect()'>
+
+<center>
+<br>
+<br>
+<br>
+<table><tr>
+<td><span id='chart'></span></td>
+<td width=50>&nbsp;</td>
+<td>
+<span id='legend'></span>
+</td>
+</tr></table>
+<br>
+<table><tr>
+<td align=center><div id='draggable1' class='draggableItem' style='background:#ffcccc; width:350; height:20'>Digital Camera Canon SD-400</div></td>
+<td align=center><div id='draggable2' class='draggableItem' style='background:#ffcccc; width:350; height:20'>Laptop Apple Powerbook 15"</div></td>
+</tr>
+<tr>
+<td colspan=2 align=center>goes into the basket:</td>
+</tr>
+<tr>
+<td align=center><div id='basket1' class='draggableTarget' style='background:#ccccff; width:200; height:20'>Basket One</div></td>
+<td align=center><div id='basket2' class='draggableTarget' style='background:#ccccff; width:200; height:20'>Basket Two</div></td>
+</tr></table>
+</center>
+<br><br>
+<div id='expandHeader1' class='shortDescription' style='width:250'>This is the area to expand...</div>
+<div id='expandWindow1' style='visibility:hidden'>
+<table class='longDescription' style='width:250;height:50' cellpadding=0 cellspacing=0 ID="Table1">
+	<tr><td>This is what it will expand to.<br>It's a cool effect.</td></tr>
+</table>
+</div><br>
+<div id='expandHeader2' class='shortDescription' style='width:250'>This is another area to expand...</div>
+<div id='expandWindow2' style='visibility:hidden'>
+<table class='longDescription' style='width:250;height:50' cellpadding=0 cellspacing=0 ID="Table2">
+	<tr><td>This is the second box.</td></tr>
+</table>
+</div>
+This is some other text.
+<br>
+Animation speed: 
+<select onchange='FRAMES_SET = this.value'>
+	<option value=1>no animation</option>
+	<option value=10>10</option>
+	<option value=20>20</option>
+	<option value=30>30</option>
+	<option value=40>40</option>
+	<option value=50>50</option>
+	<option value=60>60</option>
+</select><br>
+Chart sliders:
+<select onchange='changeSliders(this.value)'>
+	<option value='P_VISIBLE'>stay where dropped</option>
+	<option value='P_SPRINGBACK'>spring back</option>
+</select>
+<span id='stats'></span>
+
+<script language='javascript'>
+<!--
+
+/*
+	- change text selection (use mapCache trick?)
+	- make sure works on IE, Safari, FF.PC, NN.PC, NN.Mac, FF.Mac, IE.Mac
+    - add drop-down-magic-box, sliders
+    - safari: offset error, basket onmouseover, re-expand, expand onmouseover
+*/
+
+// Add an expanding object.  An expanding object, together with its header, must exist (are not created by the
+// function).  The expanding object must have its 'visibility' property set to 'hidden'.  Ideally, it should enclose
+// a table with defined width and height.
+
+expandProperties1 = getStyle("maxHeight:50; thresholdHeight:2; expandEvent:P_ONCLICK; expandMode:P_ALPHA");
+addExpandingObject(document.getElementById('expandHeader1'), document.getElementById('expandWindow1'), expandProperties1);
+expandProperties2 = getStyle("maxHeight:50; thresholdHeight:2; expandEvent:P_ONCLICK; expandMode:P_SPACEOUT");
+addExpandingObject(document.getElementById('expandHeader2'), document.getElementById('expandWindow2'), expandProperties2);
+
+
+// Add a grid with sliders.  sliderProperties get passed to the slider creator, but two properties -- 
+// onMoveHandler and onDropHandler -- are specified by addSliderSet
+
+grid = addGrid(document.getElementById('chart'), 30, 30, 10, 10, '#aaaacc');
+
+legendTable = document.createElement('table');
+document.getElementById('legend').appendChild(legendTable);
+legendTable.className = 'legendTable';
+var row = legendTable.insertRow(0);
+var cell1 = row.insertCell(0);
+cell1.innerHTML = '<b># items</b>';
+var cell2 = row.insertCell(1);
+cell2.innerHTML = '<b>price</b>';
+for(var i=0; i<grid.numCols+1; ++i)
+{
+	var row = legendTable.insertRow(i+1);
+	var cell1 = row.insertCell(0);
+	cell1.innerHTML = '&nbsp;';
+	cell1.id = 'legend'+i+'quantity';
+	var cell2 = row.insertCell(1);
+	cell2.innerHTML = '&nbsp;';
+	cell2.id = 'legend'+i+'price';
+}
+
+sliderPosition = function(grid, i) 
+{
+	retval = new Array();
+	retval.x = grid.cellWidth*i;
+	retval.y = grid.cellHeight*(grid.numRows-i);
+	retval.y *= retval.y;
+	retval.y /= grid.cellHeight*grid.numRows;
+	retval.y = Math.floor(retval.y);
+	return retval;
+}
+pixelStyle = getStyle("background:'#555599'; width:3; height:3");
+sliderStyle = getStyle("background:'#ddffdd'; borderStyle:'solid'; borderColor:'#008800'; borderWidth:1; width:15; height:15");
+sliderProperties = getStyle("onMoveParent:P_HIDDEN; onMove:P_VISIBLE");
+sliderProperties.onOverCondition = null;
+sliderProperties.onOverHandler = null;
+sliderProperties.onDrop = P_VISIBLE;
+sliderProperties.onDropParent = P_HIDDEN;
+sliderProperties.styleOnPressed = getStyle("background:'#ffccff'; borderStyle:'solid'; borderColor:'#ff00ff'; borderWidth:1; width:21; height:21");
+sliderSet = addSliderSet(grid, grid.numCols+1, 20, sliderStyle, pixelStyle, sliderPosition, sliderProperties);
+
+// Add a draggable item.
+
+var baskets = new Array('basket1', 'basket2');
+
+// TODO: This should not be here -- but Safari complains
+for(var basket in baskets)
+{
+    document.getElementById(baskets[basket]).oldstyle = new Array();
+    document.getElementById(baskets[basket]).oldstyle['background'] = '#ff0000';
+    document.getElementById(baskets[basket]).style['background'] = '#ff0000';
+}
+properties = getStyle("onMoveParent:P_ALPHA; onMove:P_ALPHA");
+properties.onMoveHandler = null;
+properties.onOverCondition = function() 
+{
+	for(var basket in baskets)
+	{
+		if(isOverElement(document.getElementById(baskets[basket])))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+properties.onOverHandler = function(condition) 
+{
+	for(var basket in baskets)
+	{
+		highlightElement(document.getElementById(baskets[basket]), isOverElement(document.getElementById(baskets[basket])), getStyle("background:'#8888cc'"));
+	}
+}
+properties.onDropHandler = function() 
+{
+	for(var basket in baskets)
+	{
+		if(isOverElement(document.getElementById(baskets[basket])))
+		{
+			document.getElementById(baskets[basket]).innerHTML = 'Item in basket'; 
+			document.getElementById(baskets[basket]).oldProperties.background = '#000077';
+			document.getElementById(baskets[basket]).style.background = '#000077';
+		}
+	}
+}
+properties.onDrop = function(condition) {return (condition?P_HIDDEN:P_SPRINGBACK);}
+properties.onDropParent = function(condition) {return (condition?P_HIDDEN:P_VISIBLE);}
+properties.styleOnPressed = getStyle("background:'#ffff00'");
+
+addDraggableObject(document.getElementById('draggable1'), properties, null);
+addDraggableObject(document.getElementById('draggable2'), properties, null);
+
+function changeSliders(value)
+{
+	value = eval(value);
+	for(var i=0; i<sliderSet.numSliders; ++i)
+	{
+		sliderSet.slider[i].properties.onDrop = value;
+		sliderSet.slider[i].properties.onDropParent = P_VISIBLE;
+	}
+}
+
+document.onmousemove = mouseMoved;
+document.onmouseup = mouseDepressed;
+
+//-->
+</script>
+</body>

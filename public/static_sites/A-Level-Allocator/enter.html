@@ -1,0 +1,682 @@
+<head>
+ <title>Module Allocating Program</title>
+</head>
+<body bgcolor=#ffffff style="font-family:monospace" onLoad="this.focus()" onKeydown="enter()">
+<center>
+<table cellpadding=0 cellspacing=0 width=100% height=96%>
+<tr height=10% valign=top><td><img src="Edexcel.gif"></td></tr>
+<tr height=10% valign=bottom><td align=middle><b><font size=5 color=#000077>Edexcel Mathematics Modules Allocator</font></b></td></tr>
+<tr height=70% valign=middle><td align=middle>
+<span id=title style="position:absolute; filter:alpha(opacity=30)"><font size=8><b>It is all so complicated...</font></b></span><br>
+<script language=javascript>
+document.all['title'].style.left=screen.width/2-450;
+document.all['title'].style.top=screen.height/2-155;
+</script>
+<span id=mainspan>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;forbidden combinations, AS and A level<br>
+units, maximalising the grade for A-level... Such obvious questions<br>
+like 'How many marks do I need to get an A' always cause pain. It is<br>
+hard to extract the single bit of information from convoluted syllabuses<br>
+and specifications. All you need is a program which asks you which<br>
+modules the student is doing / did / will be doing and shows immediately<br>
+what the possible combinations are.<br>
+What's more, it tells you mark boundaries for all unfinished modules and<br>
+helps the student to decide which unit(s) to resit. A useful source of<br>
+information for the student, and another relief for you...<br>
+<br>
+<font size=4 color=#ff0000><b>press any key to continue</b></font>
+</span>
+
+<script language=javascript>
+<!--
+document.body.onKeydown='open()';
+
+level=0;
+
+var whichon=new Array(20);
+var whichcomp=new Array(20);
+var whichres=new Array(20);
+
+var names=new Array('P1','P2','P3','P4','P5','P6',
+                    'M1','M2','M3','M4','M5','M6',
+                    'S1','S2','S3','S4','S5','S6',
+                    'D1','D2');
+var titles=new Array("AS Maths","AS Maths + AS FM","A Maths","A Maths + AS FM","A FM + AS Maths","A Maths + A FM");
+var marks=new Array('A','B','C');
+
+mk=0;
+
+function dome(which,level,mode)
+{
+ if(mode) modet=whichon[which]; else modet=whichcomp[which];
+
+ if(modet==1)
+ {
+  if(which<6) c='cbd9b3';
+  if(which>=6 && which<12) c='fee0b8';
+  if(which>=12 && which<18) c='c0c8ff';
+  if(which>=18) c='ddbbff';
+ }
+ else
+ {
+  if(which<6) c='1b8313';
+  if(which>=6 && which<12) c='fdb00b';
+  if(which>=12 && which<18) c='011fff';
+  if(which>=18) c='6600bb';
+ }
+ document.all[names[which]].innerHTML='<font color=#'+c+'>'+names[which];
+ if(mode) whichon[which]=1-whichon[which]; else whichcomp[which]=1-whichcomp[which];
+
+ if(level)
+ {
+  modet=1-modet;
+
+  if(modet==1) {fr=Math.floor(which/6)*6; to=which-1; aim=0;}
+  if(modet==0 && which<18) {fr=which+1; to=Math.floor(which/6)*6+5; aim=1;}
+  if(modet==0 && which>=18) {fr=which+1; to=19; aim=1;}
+  if(mode) 
+  {
+   for(i=fr;i<=to;++i) if(whichon[i]==aim) dome(i,0,mode);
+  }
+  else
+  {
+   for(i=fr;i<=to;++i) if(whichcomp[i]==aim) dome(i,0,mode);
+  }
+ }
+}
+
+function doresult(which)
+{
+ whichres[which]=prompt('Please enter '+names[which]+' result (0-100) or ? or n',"0");
+ whichcomp[which]=1;
+ s='XXX';
+ if(whichres[which]=='n') {s=''; whichres[which]=-1; whichcomp[which]=0;}
+ if(whichres[which]=='') whichres[which]='0';
+ if(whichres[which]=='?') {s='<font size=5 color=#770077>?</font>'; whichres[which]=-2;}
+ if(whichres[which]>=0 && whichres[which]<30) s='<font color=#ff0000>'+whichres[which]+'</font>';
+ if(whichres[which]>=30 && whichres[which]<60) s='<font color=#007700>'+whichres[which]+'</font>';
+ if(whichres[which]>=60 && whichres[which]<=100) s='<font color=#0000ff>'+whichres[which]+'</font>';
+ if(s=='XXX') {s='<font color=#ff0000>0</font>'; whichres[which]=0;}
+ if(whichcomp[which]==0)
+ {
+  if(which<6) c='cbd9b3';
+  if(which>=6 && which<12) c='fee0b8';
+  if(which>=12 && which<18) c='c0c8ff';
+  if(which>=18) c='ddbbff';
+ }
+ else
+ {
+  if(which<6) c='1b8313';
+  if(which>=6 && which<12) c='fdb00b';
+  if(which>=12 && which<18) c='011fff';
+  if(which>=18) c='6600bb';
+ }
+
+ document.all[names[which]].innerHTML='<font color=#'+c+'>'+names[which]+'</font><font size=3>&nbsp;'+s;
+}
+
+a=document.cookie.indexOf('modulesdone');
+if(a!=-1) for(i=0;i<20;++i) if(document.cookie.charAt(i+a+12)=='1') whichon[i]=1; else whichon[i]=0;
+else for(i=0;i<20;++i) whichon[i]=1;
+for(i=0;i<20;++i) whichcomp[i]=0;
+
+var k1,k2,k3,k4;
+
+function ListCombinations()
+{
+  s='Below are listed all possible combinations sorted by awarded titles.<br>';
+  s+='If the result does not satisfy you, try checking<br>';
+  s+='more modules in <font color=#0000ff>Expert</font> mode,<br>';
+  s+='or unchecking some compulsory modules<br><br>';
+  s+='<b>Note:</b> modules <u>underlined</u> can only be taken in June.<br><br>';
+  s+='<br><font color=#007700>Click on the printer button on the top to print this page</font><br><br><br>';
+
+                  /* .------- pure #
+				     | .----- other #
+				     | | .--- app min #
+				     | | | .- a2 min #   
+					 | | | |             */
+  var opt=new Array('2 1 1 0',
+                    '4 2 2 0',
+                    '3 3 3 1',
+                    '4 5 4 2',
+                    '5 4 4 0',
+                    '5 7 6 4');
+
+  for(a=0;a<6;++a)
+  {
+   s+='<font size=5><b>'+titles[a]+'</b></font><br><table cellpadding=0 cellspacing=0 border=1 bordercolor=#cccccc>';
+   pureno=opt[a].charCodeAt(0)-48; 
+   otherno=opt[a].charCodeAt(2)-48;
+   allno=pureno+otherno; 
+   appno=opt[a].charCodeAt(4)-48;
+   a2no=opt[a].charCodeAt(6)-48;
+   ipp=0; 
+   for(k1=pureno;k1<=6;++k1) if(k1<=allno)
+   {
+    for(k2=0;k2<=6;++k2) if(k1+k2<=allno)
+	{
+	 for(k3=0;k3<=6;++k3) if(k1+k2+k3<=allno)
+	 {
+	  for(k4=0;k4<=2;++k4) if(k1+k2+k3+k4==allno && k2+k3+k4>=appno)
+	  {
+	   a2=0; 
+	   a2+=k1-pureno;
+	   if(k2) a2+=k2-1; if(k3) a2+=k3-1; if(k4) a2+=k4-1;
+	   if(whichon[k1-1]=='0') a2=-1;
+	   if(k2 && whichon[k2-1+6]=='0') a2=-1;
+	   if(k3 && whichon[k3-1+12]=='0') a2=-1;
+	   if(k4 && whichon[k4-1+18]=='0') a2=-1;
+
+	   if(k1<6 && whichcomp[k1]=='1') a2=-1;
+	   if(k2<6 && whichcomp[k2+6]=='1') a2=-1;
+	   if(k3<6 && whichcomp[k3+12]=='1') a2=-1;
+	   if(k4<2 && whichcomp[k4+18]=='1') a2=-1;
+
+	   if(a2>=a2no)
+	   {
+	    s+='<tr><td><font color=#1b8313>';
+        for(b=0;b<6;++b) 
+		{
+		 if(b>3) s+='<u>';
+		 if(k1>b) s+='P'+(b+1)+'</u>'; else s+='</u>&nbsp;&nbsp;';
+		 s+='&nbsp;';
+		}
+	    s+='</font></td><td><font color=#fdb00b>';
+        for(b=0;b<6;++b) 
+		{
+		 if(b>3) s+='<u>';
+		 if(k2>b) s+='M'+(b+1)+'</u>'; else s+='</u>&nbsp;&nbsp;';
+		 s+='&nbsp;';
+		}
+	    s+='</font></td><td><font color=#011fff>';
+        for(b=0;b<6;++b) 
+		{
+		 if(b>1) s+='<u>';
+		 if(k3>b) s+='S'+(b+1)+'</u>'; else s+='</u>&nbsp;&nbsp;';
+		 s+='&nbsp;';
+		}
+	    s+='</font></td><td><font color=#6600bb>';
+        for(b=0;b<2;++b) 
+		{
+		 if(b>0) s+='<u>';
+		 if(k4>b) s+='D'+(b+1)+'</u>'; else s+='</u>&nbsp;&nbsp;';
+		 s+='&nbsp;';
+		}
+		s+='</font></td></tr>';
+		++ipp;
+	   }
+	  }
+	 }
+	}
+   }
+   if(!ipp) s+='None possible<br>';
+   s+='</table><br><br>';
+  }
+
+  s+='<br><br><font color=#ff0000 size=4><b>press any key to continue or Backspace to go back</b>';
+  document.all['mainspan'].innerHTML=s;
+  document.all['title'].innerHTML="";
+}
+
+function WriteGrades(markssofar,marksall,nomod)
+{
+ s+='<font color=#007700>';
+ if(markssofar/marksall<0.6) s+='&lt;C';
+ if(markssofar/marksall>=0.6 && markssofar/marksall<0.7) s+='C';
+ if(markssofar/marksall>=0.7 && markssofar/marksall<0.8) s+='B';
+ if(markssofar/marksall>=0.8) s+='A';
+ s+='</td><td>&nbsp;';
+ mk2=mk;
+ gradea=(0.8*marksall-markssofar)/nomod;
+ gradeb=(0.7*marksall-markssofar)/nomod;
+ gradec=(0.6*marksall-markssofar)/nomod;
+ if(mk2==0 && gradea>100) mk2=1;
+ if(mk2==1 && gradeb>100) mk2=2;
+ if(mk2==2 && gradec>100) mk2=3;
+ if(mk2==3)
+ {
+  s+='&lt;C at most';
+ }
+ else
+ {
+  if(mk2==0 && gradea>=0 && gradea<=100) s+=(0.8*marksall-markssofar)+' for A';
+  if(mk2==1 && gradeb>=0 && gradeb<=100) s+=(0.7*marksall-markssofar)+' for B';
+  if(mk2==2 && gradec>=0 && gradec<=100) s+=(0.6*marksall-markssofar)+' for C';
+ }
+}
+
+function ListGrades()
+{
+ s='Below are listed all possible combinations sorted by awarded titles.<br>';
+ s+='Each row shows all modules which a student would have to<br>';
+ s+='(re)take and a minimum number of marks he would need to<br>';
+ s+='obtain in all of them. Grades in <font color=#007700>green</font> are the<br>';
+ s+='up-to-date grades, grades in black - predictions with requirements.<br>';
+ s+='For double awards, two sets of grades are presented.<br>';
+ s+='Predictions for double awards are only approximate because of complex<br>';
+ s+='module choice. If unsure, fill in more predicted results<br>';
+ s+='If the result does not satisfy you, try checking<br>';
+ s+='more modules in <font color=#0000ff>Expert</font> mode,<br>';
+ s+='or checking more modules with <font color=#007700>?</font> mark.<br><br>';
+ s+='<b>Note:</b> modules <u>underlined</u> can only be taken in June.<br><br>';
+ s+='<br><font color=#007700>Click on the printer button on the top to print this page</font><br><br><br>';
+
+                 /* .------ pure #
+			       | .----- other #
+			       | | .--- app min #
+			       | | | .- a2 min #   
+				   | | | |             */
+ var opt=new Array('2 1 1 0',
+                   '4 2 2 0',
+                   '3 3 3 1',
+                   '4 5 4 2',
+                   '5 4 4 0',
+                   '5 7 6 4');
+
+ var comreq=new Array(0,0, 1,0, 0,0, 3,1, 3,2, 3,1);
+ var matreq=new Array(0,0,0,0,0,0,
+                      1,1,0,0,0,0,
+					  0,0,0,0,0,0,
+					  1,1,1,0,0,0,
+					  0,0,1,1,1,0,
+					  1,1,1,0,0,0);
+
+ take=new Array(20);
+ sort=new Array(20);
+
+ for(m=0;m<20;++m) sort[m]=-1;
+ for(m=0;m<14;++m)
+ {
+  max=-1;
+  for(n=6;n<20;++n)
+  {
+   if(sort[n]==-1 && max==-1 && whichres[n]>=0 && whichres[n]<=100) max=n;
+   if(sort[n]==-1 && max!=-1 && whichres[n]>=0 && whichres[n]<=100 && whichres[n]>whichres[max]) max=n;
+  }
+  sort[max]=m;
+ }
+
+ for(a=0;a<6;++a)
+ {
+  s+='<font size=5><b>'+titles[a]+'</b></font><br><table cellpadding=0 cellspacing=0 border=1 bordercolor=#cccccc>';
+  pureno=opt[a].charCodeAt(0)-48; 
+  otherno=opt[a].charCodeAt(2)-48;
+  allno=pureno+otherno; 
+  appno=opt[a].charCodeAt(4)-48;
+  a2no=opt[a].charCodeAt(6)-48;
+  ipp=0;
+  for(k1=pureno;k1<=6;++k1) if(k1<=allno)
+  {
+   for(k2=0;k2<=6;++k2) if(k1+k2<=allno)
+   {
+	for(k3=0;k3<=6;++k3) if(k1+k2+k3<=allno)
+	{
+	 for(k4=0;k4<=2;++k4) if(k1+k2+k3+k4==allno && k2+k3+k4>=appno)
+	 {
+	  a2=0; i2s=0;
+	  a2+=k1-pureno;
+	  if(k2) a2+=k2-1; if(k3) a2+=k3-1; if(k4) a2+=k4-1;
+	  if(whichon[k1-1]=='0') a2=-1;
+	  if(k2 && whichon[k2-1+6]=='0') a2=-1;
+	  if(k3 && whichon[k3-1+12]=='0') a2=-1;
+	  if(k4 && whichon[k4-1+18]=='0') a2=-1;
+
+      if(k1) for(m=0;m<k1;++m) if(!whichcomp[m]) a2=-1;
+      if(k2) for(m=0;m<k2;++m) if(!whichcomp[m+6]) a2=-1;
+      if(k3) for(m=0;m<k3;++m) if(!whichcomp[m+12]) a2=-1;
+      if(k4) for(m=0;m<k4;++m) if(!whichcomp[m+18]) a2=-1;
+
+	  if(k1!=6) for(m=k1;m<6;++m) if(whichres[m]>=0 && whichres[m]<=100) a2=-1;
+	  if(k2!=6) for(m=k2;m<6;++m) if(whichres[m+6]>=0 && whichres[m+6]<=100) a2=-1;
+	  if(k3!=6) for(m=k3;m<6;++m) if(whichres[m+12]>=0 && whichres[m+12]<=100) a2=-1;
+	  if(k4!=2) for(m=k4;m<2;++m) if(whichres[m+18]>=0 && whichres[m+18]<=100) a2=-1;
+
+	  if(a2>=a2no)
+	  {
+	   
+	   for(m=0;m<20;++m) take[m]=0;
+
+       // Single award
+	   if(a==0 || a==2) 
+	   {
+	    score=0;
+		// get obtained marks
+	    for(n=0;n<20;++n) if(whichres[n]>=0 && whichres[n]<=100) score+=(1*whichres[n]); 
+		if(!a) score2=300; else score2=600;
+	   }
+	   else 
+	   {
+
+	    // pure as mandatory for first award 
+		score1=0; took1=0;
+		for(m=0;m<6;++m) {take[m]=matreq[a*6+m]; if(matreq[a*6+m]==1) ++took1;}
+        nonquery=0;
+
+		//find marks already in mat1, including already taken apps if possible
+        for(m=0;m<6;++m) if(matreq[a*6+m] && whichres[m]>=0 && whichres[m]<=100) 
+		{
+		 score1+=(1*whichres[m]); 
+		 ++nonquery;
+		}
+		sortfirst=0; a2no=0;
+		//first, get sufficient number of a2's
+		for(a2a=0;a2a<comreq[a*2+1];++a2a) 
+		{
+		 for(;;)
+		 {
+		  if(sortfirst==14) break;
+		  toto=0;
+		  for(n=6;n<20;++n) 
+		  {
+		   if(sort[n]==sortfirst && (n%6)) 
+		   {
+		    score1+=(1*whichres[n]); 
+			take[n]=1; 
+			++a2no; 
+			++took1;
+			++nonquery;
+			toto=1; 
+			break;
+		   }
+		  }
+		  ++sortfirst;
+		  if(toto) break;
+		 }
+		}
+		//then, get the remainder of non a2's
+		sortfirst=0;
+		for(a2a=0;a2a<comreq[a*2]-a2no;++a2a)
+		{
+		 for(;;)
+		 {
+		  if(sortfirst==14) break;
+		  toto=0;
+		  for(n=6;n<20;++n) 
+		  {
+		   if(sort[n]==sortfirst && !take[n]) 
+		   {
+		    score1+=(1*whichres[n]); 
+			take[n]=1; 
+			++took1;
+			++nonquery;
+			toto=1; 
+			break;
+		   }
+		  }
+		  ++sortfirst;
+		  if(toto) break;
+		 }
+		}
+		//if not enough scored, take ?'s as first award modules
+		if(a==1) {score1all=300; mo1=3;} else {score1all=600; mo1=6;}
+		if(took1!=mo1) 
+		for(n=6;n<20;++n)
+		{
+		 if(take[n]==0) 
+		  if((n<12 && k2>n-6) || (n>=12 && n<18 && k3>n-12) || (n>=18 && k4>n-18))
+		  {take[n]=1; ++took1;}
+		 if(took1==mo1) break;
+		}
+
+        // take the remainder of scores 
+		score2=0; took2=0;
+        for(m=0;m<6;++m) if(!matreq[a*6+m] && whichres[m]>=0 && whichres[m]<=100) 
+		{
+		 score2+=(1*whichres[m]);
+		 ++took2;
+		}
+		for(m=6;m<20;++m) if(!take[m] && whichres[m]>=0 && whichres[m]<=100)
+		{
+		 score2+=(1*whichres[m]);
+		 ++took2;
+		}
+		if(a==5) {score2all=600; mo2=6;} else {score2all=300; mo2=3;}
+
+      }
+
+	   s+='<tr>';
+	   if(a==0 || a==2) s+='<td>'; else s+='<td rowspan=2>';
+	   s+='Sit:&nbsp;<font color=#1b8313>';
+       for(b=0;b<6;++b) 
+	   {
+		if(b>3) s+='<u>';
+		if(k1>b && whichres[b]==-2) 
+		{
+		 ++i2s; s+='P'+(b+1)+'</u>';
+		 if(a!=0 && a!=2 && take[b]!=1) s+='<sup>*</sup>';
+		 s+='&nbsp;';
+		} else s+='</u>';
+	   }
+	   s+='</font><font color=#fdb00b>';
+       for(b=0;b<6;++b) 
+	   {
+		if(b>3) s+='<u>';
+		if(k2>b && whichres[b+6]==-2) 
+		{
+		 ++i2s; s+='M'+(b+1)+'</u>';
+		 if(a!=0 && a!=2 && take[b+6]!=1) s+='<sup>*</sup>';
+		 s+='&nbsp;';
+		} else s+='</u>';
+	   }	
+	   s+='</font><font color=#011fff>';
+       for(b=0;b<6;++b) 
+	   {
+		if(b>1) s+='<u>';
+		if(k3>b && whichres[b+12]==-2) 
+		{
+		 ++i2s; s+='S'+(b+1)+'</u>';
+		 if(a!=0 && a!=2 && take[b+12]!=1) s+='<sup>*</sup>';
+		 s+='&nbsp;';
+		} else s+='</u>';
+	   }	
+	   s+='</font><font color=#6600bb>';
+       for(b=0;b<2;++b) 
+	   {
+		if(b>0) s+='<u>';
+		if(k4>b && whichres[b+18]==-2) 
+		{
+		 ++i2s; s+='D'+(b+1)+'</u>';
+		 if(a!=0 && a!=2 && take[b+18]!=1) s+='<sup>*</sup>';
+		 s+='&nbsp;';
+		} else s+='</u>';
+	   }
+	   s+='</font>';
+	   if(i2s==0) s+='none';
+	   s+='</td><td>&nbsp;';
+
+	   if(a==0 || a==2) WriteGrades(score,score2,i2s);
+	   else
+	   {
+        WriteGrades(score1,score1all,mo1-nonquery);
+		s+='</td></tr><tr><td>&nbsp;';
+        WriteGrades(score2,score2all,mo2-took2);
+	   }
+	
+	   s+='</td></tr>';
+   	   ++ipp;
+      }
+     }
+    }
+   }
+  }
+  if(!ipp) s+='None possible<br>';
+  s+='</table><br><br>';
+ }
+
+ s+='<br><br><font color=#ff0000 size=4><b>press any key to continue or Backspace to go back</b>';
+ document.all['mainspan'].innerHTML=s;
+ document.all['title'].innerHTML="";
+}
+
+function domark(which)
+{
+ mk=which;
+ for(m=0;m<3;++m)
+ {
+  if(m==mk) c='000000'; else c='cccccc';
+  document.all['mark'+m].innerHTML='<font color=#'+c+'>'+marks[m]+'</font>';
+ }
+}
+
+function enter()
+{
+ if(level==1 || level==4) return;
+ if(level==22 && event.keyCode==8) level=20;
+ if(level==7 && event.keyCode==8) level=5;
+ ++level;
+ if(level==1)
+ {
+  for(m=0;m<20;++m) {whichres[m]=-2; whichcomp[m]=0;}
+  s="<br><br><br><font size=5 color=#0000ff><b><span style='cursor:hand' onClick='expert=0; level=3; enter();'>Novice</span></font><br></b>To quickly and easily access most frequent options<br>";
+  s+="<br><br><font size=5 color=#0066ff><b><span style='cursor:hand' onClick='expert=1; level=2; enter();'>Expert</span></font><br></b>To have full control over the entire process of allocation<br>";
+  s+="<br><br><font color=#ff0000 size=4><b>click on the chosen option</b>";
+  document.all['mainspan'].innerHTML=s;
+  document.all['title'].innerHTML="<font size=8><b>Which option do you prefer?</b></font>";
+  document.all['title'].style.top=screen.height/2-165;
+ }
+ if(level==3)
+ {
+  document.all['title'].innerHTML="<font size=8><b>Activate modules</b></font>";
+  document.all['title'].style.top=screen.height/2-225;
+  s="Click on the modules to shade those which your department is not doing<br>and press any key when you've finished<br> or the appropriate modules have already been shaded<br>Modules which do not follow consecutive order will be shaded automatically";
+  s+="<br><br><table><tr>";
+  for(m=0;m<4;++m)
+  {
+   s+='<td width=100><font size=6><b>';
+   for(i=0;i<6;++i) 
+   {
+    if(m==0) if(!whichon[m*6+i]) c='cbd9b3'; else c='1b8313';
+    if(m==1) if(!whichon[m*6+i]) c='fee0b8'; else c='fdb00b';
+    if(m==2) if(!whichon[m*6+i]) c='c0c8ff'; else c='011fff';
+    if(m==3) if(!whichon[m*6+i]) c='ddbbff'; else c='6600bb';
+    if(m!=3 || i<2) s+=("<span id='"+names[m*6+i]+"' style='cursor:hand' onClick='dome("+(m*6+i)+",1,1)'><font color=#"+c+">"+names[m*6+i]+"</font></span><br>");
+   }
+   s+="</td>";
+  }
+  s+="</tr></table><br><font color=#ff0000 size=4><b>press any key to continue</b>";
+  document.all['mainspan'].innerHTML=s;
+ }
+ if(level==4)
+ {
+  document.all['title'].innerHTML="<font size=8><b>What do you want to do?</b></font>";
+  document.all['title'].style.top=screen.height/2-175;
+  s='&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;You can now select the option that concerns you.<br>';
+  s+="<br><br><br><font size=5 color=#0000ff><b><span style='cursor:hand' onClick='level=5; enter();'>Combinations</span></font><br></b>If you want a list of all possible combinations with titles<br>";
+  s+="<br><br><font size=5 color=#0066ff><b><span style='cursor:hand' onClick='level=20; enter();'>Grades & Retaking</span></font><br></b>To see grades / grade boundaries or query for possible retakes<br>";
+  s+="<br><br><font color=#ff0000 size=4><b>click on the chosen option</b>";
+  document.all['mainspan'].innerHTML=s;
+ }
+ if(level==6)
+ {
+  document.all['title'].innerHTML="<font size=8><b>Indicate compulsory modules</b></font>";
+  document.all['title'].style.top=screen.height/2-225;
+  s='Please tick modules which your department is doing as obligatory ones.<br>'
+  s+='You do not have to tick anything else. The program will list all<br>';
+  s+='possible titles awarded and indicate which additional modules<br>'
+  s+='would be necessary.<br><br>';
+  s+='<table><tr>';
+  for(m=0;m<4;++m)
+  {
+   s+='<td width=100><font size=6><b>';
+   for(i=0;i<6;++i) 
+   {
+    if(m==0) if(!whichcomp[m*6+i]) c='cbd9b3'; else c='1b8313';
+    if(m==1) if(!whichcomp[m*6+i]) c='fee0b8'; else c='fdb00b';
+    if(m==2) if(!whichcomp[m*6+i]) c='c0c8ff'; else c='011fff';
+    if(m==3) if(!whichcomp[m*6+i]) c='ddbbff'; else c='6600bb';
+	if(whichon[m*6+i]==0) s+="<span>&nbsp;</span><br>";
+	else if(m!=3 || i<2) s+="<span id='"+names[m*6+i]+"' style='cursor:hand' onClick='dome("+(m*6+i)+",1,0)'><font color=#"+c+">"+names[m*6+i]+"</font></span><br>";
+   }
+   s+="</td>";
+  }
+  s+='</tr></table><br><font color=#ff0000 size=4><b>press any key to continue</b>';
+  document.all['mainspan'].innerHTML=s;
+ }
+ if(level==7)
+ {
+  document.all['mainspan'].innerHTML='';
+  document.all['title'].innerHTML="<font size=8><b>Please wait...</g></font>";
+  document.all['title'].style.top=screen.height/2-50;
+  setTimeout("ListCombinations()",100);
+ }
+ if(level==8) level=200;
+ 
+ if(level==21)
+ {
+  document.all['title'].innerHTML="<font size=8><b>Indicate modules taken</b></font>";
+  document.all['title'].style.top=screen.height/2-285;
+  s='Please tick modules which the student has already taken or wants to take<br>'
+  s+='With each click indicate the module result or <b>?</b> if you want<br>';
+  s+='to query for grade boundaries. Write <b>n</b> if the student <b>does not</b><br>';
+  s+='want to take the module. The program will list all possible<br>';
+  s+='titles awarded with grades (or expected grades).<br><br>';
+  s+='<table><tr>';
+  
+  for(m=0;m<20;++m) if(whichres[m]==-2) whichcomp[m]=1;
+
+  for(m=0;m<4;++m)
+  {
+   s+='<td width=140><font size=6><b>';
+   for(i=0;i<6;++i) 
+   {
+    if(m==0) if(!whichcomp[m*6+i]) c='cbd9b3'; else c='1b8313';
+    if(m==1) if(!whichcomp[m*6+i]) c='fee0b8'; else c='fdb00b';
+    if(m==2) if(!whichcomp[m*6+i]) c='c0c8ff'; else c='011fff';
+    if(m==3) if(!whichcomp[m*6+i]) c='ddbbff'; else c='6600bb';
+    if(whichres[m*6+i]==-2) s2='<font size=5 color=#770077>?</font>';
+    if(whichres[m*6+i]>=0 && whichres[m*6+i]<30) s2='<font color=#ff0000>'+whichres[m*6+i]+'</font>';
+    if(whichres[m*6+i]>=30 && whichres[m*6+i]<60) s2='<font color=#007700>'+whichres[m*6+i]+'</font>';
+    if(whichres[m*6+i]>=60 && whichres[m*6+i]<=100) s2='<font color=#0000ff>'+whichres[m*6+i]+'</font>';
+    if(whichres[m*6+i]==-1) s2='';
+  
+	if(whichon[m*6+i]==0) s+="<span>&nbsp;</span><br>";
+    else if(m!=3 || i<2) s+="<span id='"+names[m*6+i]+"' style='cursor:hand' onClick='doresult("+(m*6+i)+")'><font color=#"+c+">"+names[m*6+i]+"</font><font size=3>&nbsp;"+s2+"</font></span><br>";
+   }
+   s+="</td>";
+  }
+  s+='</tr></table><br>Indicate which mark is the student aspiring to:<br><br><font size=6><b>';
+
+  for(m=0;m<3;++m)
+  {
+   if(m==mk) c='000000'; else c='cccccc';
+   s+='<span id=mark'+m+' style="cursor:hand" onClick="domark('+m+')"><font color=#'+c+'>'+marks[m]+'</font></span>&nbsp;&nbsp;&nbsp;&nbsp';
+  }
+  s+='</b></font><br><br><font color=#ff0000 size=4><b>press any key to continue</b>';
+  document.all['mainspan'].innerHTML=s;
+ }
+ if(level==22)
+ {
+  document.all['mainspan'].innerHTML='';
+  document.all['title'].innerHTML="<font size=8><b>Please wait...</g></font>";
+  document.all['title'].style.top=screen.height/2-50;
+  setTimeout("ListGrades()",100);
+ }
+ if(level==23) level=200;
+
+ if(level==200)
+ { 
+  moddone=new String("");
+  for(i=0;i<20;++i) moddone+=whichon[i]; 
+  document.cookie='modulesdone='+moddone+'; expires=Friday, 01-Jan-2010 12:00:01 GMT';
+  document.all['title'].innerHTML="<font size=8><b>Done!</b></font>";
+  document.all['title'].style.top=screen.height/2-155;
+  s='Do you wish to start again?<br><br><br><font color=#ff0000 size=4><b>press <font color=#770000>Y</font> for <font color=#770000>Yes</font>, any other key for <font color=#770000>No</font></b></font>';
+  document.all['mainspan'].innerHTML=s;
+ }
+ if(level==201)
+ {
+  if(event.keyCode==89) {level=0; enter();} else window.close();
+ }
+}
+//-->
+</script>
+
+</td></tr>
+<tr valign=bottom><td><font size=1 color=#999999>
+This program &copy Lucas Strozek, 2001<br>
+Edexcel is a registered name of Edexcel Foundation, which does not endorse this program
+</font></td></tr>
+</table>
+</center>
+</body>

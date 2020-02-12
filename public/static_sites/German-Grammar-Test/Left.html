@@ -1,0 +1,35 @@
+<body background="Images/bg.gif">
+<span style="position:absolute;left:20;top:20"><img src="Images/smlheader.gif"></span>
+<span id=rest onClick="Restart()" style="cursor:hand;position:absolute;visibility:hidden;left:0;top:150"><img src="Images/restart.gif"></span>
+<span id=fini onClick="Finish()" style="cursor:hand;position:absolute;visibility:hidden;left:0;top:180"><img src="Images/finish.gif"></span>
+<script language=javascript>
+<!--
+	val=0;
+	function CheckVal()
+	{
+		if(val==1)
+		{
+			document.all['rest'].style.visibility='visible';
+			document.all['fini'].style.visibility='visible';
+		}
+		else
+		{
+			document.all['rest'].style.visibility='hidden';
+			document.all['fini'].style.visibility='hidden';
+		}
+	}
+	setInterval("CheckVal()",100);
+	
+	function Restart()
+	{
+		parent.frames[1].Restart();
+	}
+
+	function Finish()
+	{	
+		parent.frames[1].Finish();
+	}
+
+//-->
+</script>
+</body>

@@ -1,0 +1,27 @@
+first unit in each section is an AS.
+
+no unit can be used more than once
+no title may be awarded more than once
+
+Titles:
+
+AS Maths     P1 P2 + one from Applied
+AS FM        P4 + at least one Applied, at least one A2
+
+A Maths      P1 P2 P3 + 3 Applied, at least one A2
+A FM         P4 P5 + at least 3 Applied, at least 3 A2
+
+Program Layout:
+
+1. All possibilities having ruled out all unwanted + titles
+2. Input score to get best results
+3. + to be retaken (?) to get boundaries
+4. + up to 3 to be retaken (?) to get boundaries
+Printout
+
+AS Maths
+AS Maths + AS FM
+A Maths
+A Maths + AS FM
+A Maths + A FM
+A FM + AS Maths
