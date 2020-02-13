@@ -1,6 +1,6 @@
-<body background="Images/body.gif">
+<body background="images/body.gif">
 <font face=arial>
-<br><br><center><img src="Images/header.gif"></center><br><br>
+<br><br><center><img src="images/header.gif"></center><br><br>
 <script language=javascript>
 <!--
 	var MAGIC = '%%^';
@@ -26,8 +26,8 @@
 	function CheckName()
 	{
 		user=document.all['name'].value;
-		if(user=='') document.images['lo'].src='Images/logondark.gif'; 
-		else document.images['lo'].src='Images/logon.gif';
+		if(user=='') document.images['lo'].src='images/logondark.gif'; 
+		else document.images['lo'].src='images/logon.gif';
 	}
 
 	setInterval("CheckName()",100);
@@ -45,8 +45,8 @@
 	else document.write('<font color=#000000>If you want to log on to our system and record your progress, you can write your name in the box below. It can be a real name or a nickname - anything. The information you receive will be available only to you.</font><br>');
 
 	document.write('<center><form name=Login><b>Type in your name:</b> <input type=text style="font-family:verdana; color:#ffffff; background-color:#000000" name=name><br><br>');
-	document.write('<img name=lo onClick="LogOn()" style="cursor:hand" src="Images/logon.gif">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
-	document.write('<img onClick="NoLogOn()" style="cursor:hand" src="Images/nologon.gif">');
+	document.write('<img name=lo onClick="LogOn()" style="cursor:hand" src="images/logon.gif">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+	document.write('<img onClick="NoLogOn()" style="cursor:hand" src="images/nologon.gif">');
 	document.write('</form><br><br>Here you can tick what you want to be tested on:<br><br>');
 	document.write('<table border=0><tr><td><input type=checkbox name=teston1></input></td><td>Verb Forms</td></tr>');
 	document.write('<tr><td><input type=checkbox name=teston2></input></td><td>Articles and Pronouns</td></tr>');
