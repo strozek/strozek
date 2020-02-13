@@ -5,23 +5,19 @@ A collection of personal utilities, demos, and showcases
 
 * `/status`: returns `OK`
 * `/info`: returns host/environment name
-* `/dice`: returns an animation of rolled dice (see LINK)
-* `/fire`: returns an animation of a torch (see LINK)
-* `/luck`: luck simulator (see LINK)
-* `/truthtable`: truth table generator (see LINK)
-* `/zoom`: zoom effect generator (see LINK)
-* `/disappear/bw/:text`: create an image that includes the string "text" that disappears when printed in B&W (see LINK)
+* `/dice`: returns an animation of rolled dice (see https://www.elevenseconds.com/tvd/from-the-archives-ephemeral-dice-and-fire-effects)
+* `/fire`: returns an animation of a torch (see https://www.elevenseconds.com/tvd/from-the-archives-ephemeral-dice-and-fire-effects)
+* `/luck`: luck simulator (see https://www.elevenseconds.com/tvd/what-is-luck)
+* `/truthtable`: truth table generator (see https://www.elevenseconds.com/tvd/truth-table-generator)
+* `/zoom`: zoom effect generator (see https://www.elevenseconds.com/tvd/the-zoom-effect)
+* `/disappear/bw/:text`: create an image that includes the string "text" that disappears when printed in B&W (see https://www.elevenseconds.com/tvd/disappearing-messages)
 * `/disappear/color/:text/:distraction`: create an image that includes a decoy string "distraction" that disappears and a secret "text" appears when printed in B&W
-* `/crowdsource`: the crowdsourcing project (see LINK), written in 2009
+* `/crowdsource`: the crowdsourcing project (see https://www.elevenseconds.com/tvd/crowdsourced-art), written in 2009
 * `/crowdsource/makeMeAToken/:salt/:amount`: creae a token, given the secret salt, and the number of pixels
 * `/crowdsource/listMeTheTokens/:salt`: list all tokens in the system
-* `/static_sites/A-Level-Allocator/enter.html`: An exploration tool for British Mathematics A-Levels (see LINK), built in 2001
-* `/static_sites/German-Grammar-Test/index.html`: A simple german grammar test (see LINK), built in 2001
-* `/static_sites/js-objects.html`: A demo of jquery UI-like objects I built in 2005
-
-#### TODO
-
-* loveandmath host
+* `/static_sites/A-Level-Allocator/enter.html`: An exploration tool for British Mathematics A-Levels (see https://www.elevenseconds.com/archive/early-websites-2001), built in 2001
+* `/static_sites/German-Grammar-Test/index.html`: A simple german grammar test (see https://www.elevenseconds.com/archive/early-websites-2001), built in 2001
+* `/static_sites/js-objects.html`: A demo of jquery UI-like objects I built in 2005 (see LINK)
 
 #### Files not in the repository
 
