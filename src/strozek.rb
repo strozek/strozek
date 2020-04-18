@@ -71,6 +71,10 @@ class Strozek < Sinatra::Base
 		erb :disappear_color, :locals => {:message => params[:text].gsub(/"/, '\\"'), :distraction => params[:distraction].gsub(/"/, '\\"')}
 	end
 
+	get '/pictionary' do
+		erb :pictionary
+	end
+
 	get '/loveandmath' do
 		erb :loveandmath
 	end

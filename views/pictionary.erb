@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Pictionary by Lukasz</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="mobile-web-app-capable" content="yes">
+	<link rel="shortcut icon" type="image/ico" href="/images/pictionary/favicon.png" />
+	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Bitter:700" rel="stylesheet">
+	<style>
+		body {
+			font-family: 'Roboto', sans-serif;
+		}
+		em {
+			font-style: normal;
+			font-weight: bold;
+			color: #003399;
+		}
+		h2 {
+			font-family: 'Bitter', serif;
+			font-size: 2em;
+			color: #999999;
+			margin: 0;
+		}
+		h3 {
+			font-size: 2.2em;
+		}
+		h4 {
+			font-size: 1.5em;
+		}
+		.no-display {
+			display: none;
+		}
+		.textbox {
+			font-size: 1em;
+			border: #000000 2px solid;
+			padding: 10px;
+		}
+		.large_button {
+			font-size: 1em;
+			border: #000000 2px solid;
+			background-color: #eeeeee;
+			padding: 10px;
+		}
+		.control_button {
+			font-size: 1.5em;
+			border: #000000 2px solid;
+			background-color: #eeeeee;
+			padding: 10px;
+			width: 50%;
+		}
+		.green {
+			color: #009900;
+		}
+		.red {
+			color: #990000;
+		}
+		#reveal_block {
+			height: 3em;
+		}
+		#start_block {
+			height: 6em;
+		}
+		#skip_block {
+			height: 2.8em;
+		}
+	</style>
+</head>
+<body>
+<audio controls id="horn_sound" class="no-display">
+	<source src="/media/pictionary/airhorn.mp3" type="audio/mpeg">
+</audio>
+<audio controls id="applause_sound" class="no-display">
+	<source src="/media/pictionary/applause.mp3" type="audio/mpeg">
+</audio>
+<h2>Pictionary</h2>
+<div id="header">
+	<center>
+	<h3>
+		Game ID: <input type="text" id="round" value="A0" size="5" class="textbox"><br><br>
+		<input type="button" onClick="initialize_game()" value="Get Started!" class="large_button">
+	</h3>
+	</center>
+</div>
+<div id="main">
+</div>
+<script language="javascript">
+
+var turn = null;
+var team = null;
+var score = [];
+var games = null;
+var time = 0;
+var interval = null;
+var timeout = null;
+var words = [
+	['whale', 'pants', 'tail', 'swing', 'neck', 'hamburger', 'kite', 'bumblebee', 'grass', 'angel', 'truck', 'box', 'zebra', 'baseball', 'pie', 'camera', 'bunk bed', 'plant', 'airplane', 'swimming pool', 'slide', 'desk', 'ears', 'bridge', 'moon', 'dinosaur', 'ocean', 'hook', 'kitten', 'ice cream cone', 'coin', 'key', 'zoo', 'fish', 'blocks', 'octopus', 'inchworm', 'comb', 'giraffe', 'apple', 'basketball', 'caterpillar', 'sea', 'lamp', 'leg', 'bell', 'cow', 'crab', 'boat', 'pencil', 'lollipop', 'man', 'football', 'rock', 'swing', 'snowman', 'grass', 'triangle', 'fork', 'truck', 'table', 'box', 'music', 'camera', 'pillow', 'cat', 'bow', 'swimming pool', 'water', 'bus', 'train', 'ears', 'float', 'moon', 'flag', 'ocean', 'milk', 'leaf', 'ice cream cone', 'coin', 'hippo', 'broom', 'window', 'turtle', 'bracelet', 'chimney', 'cube', 'book', 'inchworm', 'beak', 'king', 'snowflake', 'butterfly', 'bread', 'ants', 'skateboard', 'cow', 'carrot', 'wheel', 'bee'],
+	['canoe', 'black widow', 'teeth', 'stocking', 'seesaw', 'bacteria', 'tub', 'whisk', 'sea turtle', 'swim', 'page', 'headband', 'run', 'fan', 'drink', 'fist', 'popsicle', 'batteries', 'ironing board', 'toaster', 'pilot', 'sidewalk', 'butcher', 'bell', 'locket', 'hammer', 'snail', 'elevator', 'throat', 'gum', 'shoulder', 'paperclip', 'hip', 'easel', 'claw', 'chess', 'waist', 'orange', 'sleeve', 'table', 'parka', 'open', 'celery', 'carousel', 'pollution', 'coconut', 'buggy', 'sky', 'narwhal', 'weight', 'spoon', 'shopping cart', 'pajamas', 'movie theater', 'insect', 'rock', 'firefighter', 'video camera', 'gate', 'melt', 'pencil', 'sunset', 'zookeeper', 'towel', 'bakery', 'plank', 'blueprint', 'closed', 'porch', 'third plate', 'stapler', 'cheerleader', 'birthday cake', 'birthday', 'neighbor', 'wave', 'lemon', 'fang', 'gap', 'solar system', 'art', 'crib', 'hurdle', 'dimple', 'glass', 'seaweed', 'mini blinds', 'rain', 'slope', 'castle', 'broccoli', 'donkey', 'shake', 'half', 'parka', 'jar', 'cliff', 'muffin', 'door', 'mask']
+];
+var word_count = words[0].length;
+var current_word = null;
+var current_drawer = null;
+var easier = [];
+
+function initialize_game()
+{
+	game_type = document.getElementById('round').value.substr(0, 1).toUpperCase();
+	word_index = parseInt(document.getElementById('round').value.substr(1));
+	score = [0, 0];
+
+	// Val, Lukasz, Iza, Bob, Judith, Audrey playing on Easy
+	if(game_type=='A') {
+		A1 = 'Valerie'; A2 = 'Bob'; A3 = 'Audrey';
+		B1 = 'Lukasz'; B2 = 'Judith'; B3 = 'Iza';
+
+		team = [
+			[A1, A2, A3],
+			[B1, B2, B2]
+		];
+		easier = [B3];
+
+		games = [
+			[0, 0, A1, A2, A3],
+			[1, 0, B1, B2, B3],
+			[0, 0, A2, A1, A3],
+			[1, 0, B2, B1, B3],
+			[0, 0, A3, A1, A2],
+			[1, 0, B3, B1, B2]
+		];
+	}
+
+	// Val, Lukasz, Iza, Bob, Judith, Audrey playing. Grown ups play on Medium, Iza plays on Easy
+	if(game_type=='B') {
+		A1 = 'Valerie'; A2 = 'Bob'; A3 = 'Audrey';
+		B1 = 'Lukasz'; B2 = 'Judith'; B3 = 'Iza';
+
+		team = [
+			[A1, A2, A3],
+			[B1, B2, B2]
+		];
+		easier = [B3];
+
+		games = [
+			[0, 1, A1, A2, A3],
+			[1, 1, B1, B2, B3],
+			[0, 1, A2, A1, A3],
+			[1, 1, B2, B1, B3],
+			[0, 1, A3, A1, A2],
+			[1, 0, B3, B1, B2]
+		];
+	}
+
+	document.getElementById("header").style.display = 'none';
+	start_turn();
+}
+
+function start_turn()
+{
+	if(interval != null) {
+		clearInterval(interval);
+		interval = null;
+	}
+	if(timeout != null) {
+		clearTimeout(timeout);
+		timeout = null;
+	}
+	if(turn==null) {
+		turn = 0;
+	} else {
+		turn = (turn+1) % games.length;
+		word_index = (word_index+1) % word_count;
+	}
+	current_word = words[games[turn][1]][word_index];
+	current_drawer = games[turn][2];
+	display_turn_directions();
+}
+
+function display_turn_directions()
+{
+	var s = "<h4>Word #"+word_index+"</h4><h3><em>"+current_drawer+"</em> drawing.<br><em>";
+	for(var i=3; i<games[turn].length; ++i) {
+		if(i>3) s += ", ";
+		s += games[turn][i];
+	}
+	s += "</em> guessing.</h3>";
+	document.getElementById("main").innerHTML = 
+		s + 
+		"<center>" + 
+		"<div id='reveal_block'><input type='button' onClick='reveal()' value='Reveal' class='control_button'></div><br>" + 
+		"<div id='start_block'><input type='button' onClick='start()' value='Start Timer' class='control_button'></div><br>" + 
+		"<div id='timer'><h2>&nbsp;</h2></div><br>" + 
+		"<div id='scores'></div><br>" + 
+		"<div id='skip_block'><input type='button' onClick='skip()' value='Skip word' class='control_button'></div><br>" +
+		"<input type='button' onClick='start_turn()' value='New turn' class='control_button'>" +
+		"</center>";
+}
+
+function reveal()
+{
+	document.getElementById("reveal_block").innerHTML = "<h2>" + current_word + "</h2>";
+	timeout = setTimeout(unreveal, 2000);
+}
+
+function skip()
+{
+	word_index = (word_index+1) % word_count;
+	current_word = words[games[turn][1]][word_index];
+	display_turn_directions();
+}
+
+function unreveal()
+{
+	document.getElementById("reveal_block").innerHTML = "<input type='button' onClick='reveal()' value='Reveal' class='control_button'></div>";
+}
+
+function start()
+{
+	time = easier.includes(current_drawer) ? 90 : 60;
+	document.getElementById("timer").innerHTML = "<h2>"+time+"</h2>";
+	document.getElementById("reveal_block").innerHTML = "";
+	document.getElementById("skip_block").innerHTML = "";
+	document.getElementById("start_block").innerHTML = "<input type='button' onClick='guessed()' value='Guessed!' class='control_button'>";
+	interval = setInterval(tick, 1000);
+}
+
+function team_scores()
+{
+	var s = '<h4>';
+	for(var i=0; i<team.length; ++i) {
+		if(i>0) {
+			s += "<br><br>"
+		}
+		s += 'Team '+team[i].join(", ")+":<br><em>"+score[i]+" point"+(score[i]==1 ? '' : 's')+"</em>";
+	}
+	s += "</h4>";
+	return s;
+}
+
+function guessed()
+{
+	document.getElementById("applause_sound").play();
+	clearInterval(interval);
+	interval = null;
+	document.getElementById("timer").innerHTML = "<h2 class='green'>Guessed!</h2>";
+	document.getElementById("start_block").innerHTML = "";
+	++score[games[turn][0]];
+	document.getElementById("reveal_block").innerHTML = team_scores();
+}
+
+function tick()
+{
+	--time;
+	document.getElementById("timer").innerHTML = "<h2>"+time+"</h2>";
+	if(time==0) {
+		document.getElementById("horn_sound").play();
+		clearInterval(interval);
+		interval = null;
+		document.getElementById("timer").innerHTML = "<h2 class='red'>Time's Up!</h2>";
+		document.getElementById("start_block").innerHTML = "";
+		document.getElementById("reveal_block").innerHTML = team_scores();
+	}
+}
+
+/*
+team = [
+	['Valerie', 'Judith', 'Matt'],
+	['Lukasz', 'Bob', 'Shira', 'Iza']
+];
+games = [
+// team #, who's drawing, everyone's who's guessing...
+	[0, 'Valerie', 'Judith', 'Matt'], 
+	[1, 'Lukasz', 'Bob', 'Shira', 'Iza'],
+	[0, 'Judith', 'Valerie', 'Matt'],
+	[1, 'Bob', 'Lukasz', 'Shira', 'Iza'],
+	[1, 'Shira', 'Iza'],
+	[0, 'Matt', 'Valerie', 'Judith'],
+	[1, 'Shira', 'Lukasz', 'Bob', 'Iza'],
+	[0, 'Valerie', 'Judith', 'Matt'],
+	[1, 'Iza', 'Lukasz', 'Bob', 'Shira'],
+	[1, 'Lukasz', 'Iza'],
+	[0, 'Judith', 'Valerie', 'Matt'],
+	[1, 'Bob', 'Iza'],
+	[0, 'Matt', 'Valerie', 'Judith'],
+	[1, 'Iza', 'Lukasz', 'Bob', 'Shira']
+];
+
+
+games = [
+[0, 'Valerie', 'Judith'],	
+[1, 'Lukasz', 'Iza', 'Bob'],
+[0, 'Judith', 'Valerie'],
+[1, 'Bob', 'Lukasz', 'Iza'],
+[0, 'Valerie', 'Judith'],
+[1, 'Iza', 'Lukasz', 'Bob'],
+[0, 'Judith', 'Valerie'],
+[1, 'Lukasz', 'Iza'],
+[0, 'Valerie', 'Judith'],
+[1, 'Iza', 'Lukasz', 'Bob'],
+[0, 'Judith', 'Valerie'],
+[1, 'Bob', 'Iza']
+*/
+
+</script>
+</body>
+<html>
