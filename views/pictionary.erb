@@ -10,11 +10,14 @@
 	<style>
 		body {
 			font-family: 'Roboto', sans-serif;
+			text-align: center;
+			padding: 20px 10px 20px 10px;
 		}
-		em {
-			font-style: normal;
+		h1 {
+			font-size: 1.8em;
 			font-weight: bold;
-			color: #003399;
+			color: #0006b1;
+			padding: 20px 0px 20px 0px;
 		}
 		h2 {
 			font-family: 'Bitter', serif;
@@ -22,47 +25,15 @@
 			color: #999999;
 			margin: 0;
 		}
-		h3 {
-			font-size: 1.7em;
-		}
-		h4 {
-			font-size: 1.1em;
-		}
 		.no-display {
 			display: none;
 		}
-		.textbox {
-			font-size: 0.75em;
-			border: #000000 2px solid;
-			padding: 8px;
-		}
-		.large_button {
-			font-size: 0.75em;
-			border: #000000 2px solid;
-			background-color: #eeeeee;
-			padding: 8px;
-		}
-		.control_button {
+		.button {
 			font-size: 1.1em;
 			border: #000000 2px solid;
 			background-color: #eeeeee;
 			padding: 8px;
-			width: 50%;
-		}
-		.green {
-			color: #009900;
-		}
-		.red {
-			color: #990000;
-		}
-		#reveal_block {
-			height: 2.25em;
-		}
-		#start_block {
-			height: 4.5em;
-		}
-		#skip_block {
-			height: 2em;
+			width: 30%;
 		}
 	</style>
 </head>
@@ -70,235 +41,76 @@
 <audio controls id="horn_sound" class="no-display">
 	<source src="/media/pictionary/airhorn.mp3" type="audio/mpeg">
 </audio>
-<audio controls id="applause_sound" class="no-display">
-	<source src="/media/pictionary/applause.mp3" type="audio/mpeg">
-</audio>
 <h2>Pictionary</h2>
-<div id="header">
-	<center>
-	<h3>
-		Game ID: <input type="text" id="round" value="A0" size="5" class="textbox"><br><br>
-		<input type="button" onClick="initialize_game()" value="Get Started!" class="large_button">
-	</h3>
-	</center>
+<h1 id="word">&nbsp;</h1>
+<input type="button" onClick="serveWord()" value="Show Word" class="button">
+<br>
+<br>
+<div id="admin" class="no-display">
+	<input type="button" id="timer1" onClick="startTime(1, 60)" value="Start 60s" class="button">
+	<input type="button" id="timer2" onClick="startTime(2, 90)" value="Start 90s" class="button">
+	<input type="button" onClick="stopTime()" value="Stop" class="button">
+	<br>
+	<br>
+	<input type="button" onClick="words = words1" value="Group 1" class="button">
+	<input type="button" onClick="words = words2" value="Group 2" class="button">
 </div>
-<div id="main">
-</div>
+
 <script language="javascript">
 
-var turn = null;
-var team = null;
-var score = [];
-var games = null;
-var time = 0;
-var interval = null;
-var timeout = null;
-var words = [
-	['whale', 'pants', 'tail', 'swing', 'neck', 'hamburger', 'kite', 'bumblebee', 'grass', 'angel', 'truck', 'box', 'zebra', 'baseball', 'pie', 'camera', 'bunk bed', 'plant', 'airplane', 'swimming pool', 'slide', 'desk', 'ears', 'bridge', 'moon', 'dinosaur', 'ocean', 'hook', 'kitten', 'ice cream cone', 'coin', 'key', 'zoo', 'fish', 'blocks', 'octopus', 'inchworm', 'comb', 'giraffe', 'apple', 'basketball', 'caterpillar', 'sea', 'lamp', 'leg', 'bell', 'cow', 'crab', 'boat', 'pencil', 'lollipop', 'man', 'football', 'rock', 'swing', 'snowman', 'grass', 'triangle', 'fork', 'truck', 'table', 'box', 'music', 'camera', 'pillow', 'cat', 'bow', 'swimming pool', 'water', 'bus', 'train', 'ears', 'float', 'moon', 'flag', 'ocean', 'milk', 'leaf', 'ice cream cone', 'coin', 'hippo', 'broom', 'window', 'turtle', 'bracelet', 'chimney', 'cube', 'book', 'inchworm', 'beak', 'king', 'snowflake', 'butterfly', 'bread', 'ants', 'skateboard', 'cow', 'carrot', 'wheel', 'bee'],
-	['canoe', 'black widow', 'teeth', 'stocking', 'seesaw', 'bacteria', 'tub', 'whisk', 'sea turtle', 'swim', 'page', 'headband', 'run', 'fan', 'drink', 'fist', 'popsicle', 'batteries', 'ironing board', 'toaster', 'pilot', 'sidewalk', 'butcher', 'bell', 'locket', 'hammer', 'snail', 'elevator', 'throat', 'gum', 'shoulder', 'paperclip', 'hip', 'easel', 'claw', 'chess', 'waist', 'orange', 'sleeve', 'table', 'parka', 'open', 'celery', 'carousel', 'pollution', 'coconut', 'buggy', 'sky', 'narwhal', 'weight', 'spoon', 'shopping cart', 'pajamas', 'movie theater', 'insect', 'rock', 'firefighter', 'video camera', 'gate', 'melt', 'pencil', 'sunset', 'zookeeper', 'towel', 'bakery', 'plank', 'blueprint', 'closed', 'porch', 'third plate', 'stapler', 'cheerleader', 'birthday cake', 'birthday', 'neighbor', 'wave', 'lemon', 'fang', 'gap', 'solar system', 'art', 'crib', 'hurdle', 'dimple', 'glass', 'seaweed', 'mini blinds', 'rain', 'slope', 'castle', 'broccoli', 'donkey', 'shake', 'half', 'parka', 'jar', 'cliff', 'muffin', 'door', 'mask']
-];
-var word_count = words[0].length;
-var current_word = null;
-var current_drawer = null;
-var easier = [];
+var words1 = ['Earth', 'Mickey Mouse', 'alive', 'alligator', 'angel', 'ant', 'ants', 'apple', 'arm', 'baby', 'backpack', 'ball', 'balloon', 'bark', 'baseball', 'basketball', 'bat', 'bathroom', 'beach', 'beak', 'bear', 'bed', 'bee', 'bench', 'bike', 'blanket', 'blocks', 'boat', 'bone', 'book', 'bounce', 'bow', 'bowl', 'box', 'boy', 'bracelet', 'branch', 'bread', 'bridge', 'broom', 'bug', 'bunk bed', 'bunny', 'bus', 'butterfly', 'button', 'camera', 'candle', 'candy', 'car', 'carrot', 'cat', 'caterpillar', 'chair', 'cherry', 'chicken', 'chimney', 'clock', 'cloud', 'coat', 'coin', 'comb', 'computer', 'cookie', 'corn', 'cow', 'crab', 'crayon', 'cube', 'cup', 'cupcake', 'curl', 'daisy', 'desk', 'diamond', 'dinosaur', 'dog', 'doll', 'door', 'dragon', 'dream', 'drum', 'duck', 'ear', 'ears', 'elephant', 'eyes', 'family', 'feet', 'finger', 'fire', 'flower', 'fly', 'football', 'fork', 'frog', 'ghost', 'giraffe', 'girl', 'glasses', 'grapes', 'grass', 'hair', 'hamburger', 'hand', 'hat', 'head', 'heart', 'helicopter', 'hippo', 'hook', 'horse', 'house', 'ice cream cone', 'inchworm', 'island', 'jacket', 'jar', 'jellyfish', 'key', 'king', 'kite', 'kitten', 'knee', 'ladybug', 'lamp', 'leaf', 'leg', 'lemon', 'light', 'line', 'lion', 'lips', 'lizard', 'lollipop', 'love', 'man', 'milk', 'monkey', 'monster', 'moon', 'mouse', 'mouth', 'music', 'nail', 'neck', 'night', 'nose', 'ocean', 'octopus', 'orange', 'oval', 'owl', 'pants', 'pencil', 'person', 'pie', 'pig', 'pillow', 'plant', 'purse', 'rabbit', 'rain', 'ring', 'river', 'robot', 'sea', 'sea turtle', 'seashell', 'sheep', 'ship', 'shirt', 'shoe', 'skateboard', 'slide', 'smile', 'snowflake', 'snowman', 'socks', 'spider', 'spider web', 'square', 'stairs', 'star', 'starfish', 'suitcase', 'sun', 'sunglasses', 'swimming pool', 'swing', 'table', 'tail', 'train', 'tree', 'triangle', 'truck', 'turtle', 'water', 'whale', 'wheel', 'window', 'woman', 'worm', 'zebra', 'zigzag', 'zoo'];
+var words2 = ['America', 'Jupiter', 'aircraft', 'airport', 'alarm clock', 'ambulance', 'apologize', 'apple pie', 'artist', 'astronaut', 'aunt', 'baby', 'babysitter', 'back', 'backbone', 'bag', 'bagel', 'baggage', 'bagpipe', 'baker', 'bakery', 'bald eagle', 'banana peel', 'banana split', 'banjo', 'barn', 'barrel', 'basket', 'bat', 'bathroom scale', 'bathtub', 'beaver', 'bicycle', 'birthday', 'black hole', 'blanket', 'blimp', 'blowfish', 'bomb', 'bottle', 'box', 'braid', 'brain', 'breakfast', 'brick', 'bucket', 'bus', 'bushes', 'butcher', 'button', 'cabin', 'cage', 'camera', 'campfire', 'cannon', 'canoe', 'cape', 'carpet', 'cash', 'cast', 'castle', 'cave', 'ceiling fan', 'celery', 'cell phone', 'cello', 'cemetery', 'chain', 'chalk', 'cheerleader', 'cheetah', 'chef', 'chess', 'chin', 'circus', 'city', 'class', 'closed', 'clown', 'clownfish', 'coal', 'coast', 'cobra', 'cobweb', 'coconut', 'cocoon', 'coil', 'coin', 'college', 'colored pencil', 'computer', 'connect', 'contain', 'cook', 'corn', 'corndog', 'corner', 'cotton candy', 'cougar', 'cover', 'cowboy', 'coyote', 'crack', 'cracker', 'crater', 'crib', 'cricket', 'crown', 'crust', 'cul-de-sac', 'curb', 'curtain', 'curtains', 'curve', 'dad', 'daddy longlegs', 'day', 'dimple', 'dirt', 'doctor', 'dog leash', 'doghouse', 'dollar', 'dominoes', 'donkey', 'door', 'doorknob', 'doormat', 'dragonfly', 'draw', 'dress', 'drill', 'drink', 'drums', 'drumstick', 'earmuffs', 'east', 'eclipse', 'elbow', 'electrical outlet', 'envelope', 'eye patch', 'face', 'fairies', 'family', 'fan', 'farm', 'farmer', 'faucet', 'fern', 'ferry', 'field', 'fire hydrant', 'firefighter', 'fishing pole', 'fist', 'flamingo', 'flashlight', 'floor', 'food', 'fox', 'frame', 'french fries', 'frog', 'front porch', 'frying pan', 'full moon', 'fur', 'garage', 'globe', 'glove', 'glue', 'go', 'gold', 'goldfish', 'grape', 'graph', 'gravity', 'growl', 'guitar', 'gum', 'gumball', 'hail', 'hair dryer', 'hairbrush', 'half', 'hammer', 'harmonica', 'harp', 'headband', 'heel', 'helicopter', 'hero', 'highway', 'hill', 'hippopotamus', 'hiss', 'homeless', 'honey', 'hook', 'hopscotch', 'horse', 'hospital', 'hot-air balloon', 'hug', 'hunter', 'hurdle', 'ice', 'ink', 'insect', 'ironing board', 'island', 'jacket', 'jail', 'janitor', 'jar', 'jelly', 'jet ski', 'jump', 'kettle', 'king', 'kiss', 'knot', 'ladder', 'ladybug', 'lake', 'latitude', 'laundry basket', 'lawn mower', 'leak', 'lemon', 'letter', 'light bulb', 'light switch', 'lighthouse', 'lightsaber', 'limousine', 'lipstick', 'liquid', 'list', 'lobster', 'lock', 'log', 'lucky', 'lunchbox', 'lung', 'magazine', 'magic', 'magic carpet', 'magnet', 'mail', 'mailbox', 'map', 'marker', 'marry', 'marshmallow', 'mask', 'match', 'mattress', 'maze', 'meat', 'merry-go-round', 'middle', 'mini blinds', 'minivan', 'molecule', 'monkey', 'monster', 'mop', 'mouse pad', 'mud', 'muffin', 'mug', 'museum', 'mushroom', 'napkin', 'neck', 'necktie', 'neighbor', 'nest', 'newborn', 'noon', 'north', 'notepad', 'nun', 'nurse', 'oar', 'ocean', 'onion', 'open', 'orange', 'organ', 'outer space', 'outside', 'owl', 'pail', 'palace', 'pan', 'pancake', 'panda', 'pantry', 'paperclip', 'parachuting', 'park', 'parka', 'password', 'paw', 'pea', 'peach', 'pear', 'peck', 'pelican', 'pencil', 'penny', 'photograph', 'piano', 'pickle', 'picture frame', 'pie', 'pillowcase', 'pineapple', 'pinecone', 'ping pong', 'pinwheel', 'pipe', 'pirate', 'pitchfork', 'pizza', 'plant', 'playground', 'plug', 'pocket', 'pogo stick', 'poodle', 'pool', 'pop', 'popcorn', 'porch', 'porcupine', 'porthole', 'positive', 'powder', 'present', 'pretzel', 'princess', 'printer', 'propeller', 'puddle', 'pulley', 'puppet', 'purse', 'puzzle', 'queen', 'radish', 'railroad', 'rainstorm', 'rake', 'rat', 'rhinoceros', 'ribbon', 'rice', 'ring', 'river', 'rocket', 'roller blading', 'rolly polly', 'roof', 'room', 'rose', 'rug', 'run', 'sack', 'safe', 'sail', 'salt', 'salt and pepper', 'saltwater', 'sand', 'sandal', 'save', 'saw', 'saxophone', 'scale', 'scientist', 'scissors', 'screwdriver', 'sea turtle', 'seal', 'see', 'seed', 'seesaw', 'shadow', 'shake', 'shallow', 'shampoo', 'shark', 'shelf', 'ship', 'shipwreck', 'shoulder', 'shovel', 'sidekick', 'sidewalk', 'silverware', 'sink', 'skateboard', 'ski', 'skunk', 'sky', 'sleep', 'slide', 'slope', 'smoke', 'snowball', 'soccer', 'soda', 'solar system', 'soup', 'spaceship', 'spare', 'spine', 'sponge', 'spool', 'spoon', 'spot', 'spring', 'squirrel', 'squirt gun', 'stain', 'stamp', 'start', 'stem', 'step', 'stick', 'stocking', 'stomach', 'store', 'storm', 'stove', 'strap', 'straw', 'strawberry', 'string', 'submarine', 'subway', 'summer', 'swing', 't-shirt', 'tadpole', 'tail', 'tape', 'taxi', 'teacher', 'teapot', 'telephone', 'television', 'tennis', 'thermometer', 'thief', 'third plate', 'three-toed sloth', 'throne', 'tie', 'tightrope', 'time', 'timer', 'tire', 'toast', 'tongue', 'tooth', 'toothbrush', 'torch', 'towel', 'tower', 'toy', 'trampoline', 'trap', 'trapeze', 'trip', 'trophy', 'trunk', 'turkey', 'tusk', 'twig', 'unicycle', 'unite', 'vase', 'video camera', 'waffle', 'wagon', 'waist', 'wallet', 'watch', 'watering can', 'wave', 'wedge', 'well', 'wheelbarrow', 'wheelchair', 'whistle', 'wick', 'windmill', 'window', 'wing', 'wood', 'wreath', 'wrist', 'yacht', 'yardstick', 'yarn', 'yo-yo', 'zebra', 'zipper', 'zoo'];
 
-function initialize_game()
+<% if(@word_group=='0') %>
+	var words = words1;
+	document.getElementById('admin').classList.remove("no-display");
+<% else %>
+	var words = words<%= @word_group %>;
+<% end %>
+
+var timerId = null;
+var timerInterval = null;
+var timeLeft = null;
+var originalTime = null;
+
+function serveWord()
 {
-	game_type = document.getElementById('round').value.substr(0, 1).toUpperCase();
-	word_index = parseInt(document.getElementById('round').value.substr(1));
-	score = [0, 0];
+	document.getElementById('word').innerHTML = words[parseInt(Math.random()*words.length)];
+}
 
-	// Val, Lukasz, Iza, Bob, Judith, Audrey playing on Easy
-	if(game_type=='A') {
-		A1 = 'Valerie'; A2 = 'Bob'; A3 = 'Audrey';
-		B1 = 'Lukasz'; B2 = 'Judith'; B3 = 'Iza';
-
-		team = [
-			[A1, A2, A3],
-			[B1, B2, B3]
-		];
-		easier = [B3];
-
-		games = [
-			[0, 0, A1, A2, A3],
-			[1, 0, B1, B2, B3],
-			[0, 0, A2, A1, A3],
-			[1, 0, B2, B1, B3],
-			[0, 0, A3, A1, A2],
-			[1, 0, B3, B1, B2]
-		];
+function startTime(id, seconds)
+{
+	if(timerInterval)
+	{
+		// stop timer first
+		stopTime();
 	}
-
-	// Val, Lukasz, Iza, Bob, Judith, Audrey playing. Grown ups play on Medium, Iza plays on Easy
-	if(game_type=='B') {
-		A1 = 'Valerie'; A2 = 'Bob'; A3 = 'Audrey';
-		B1 = 'Lukasz'; B2 = 'Judith'; B3 = 'Iza';
-
-		team = [
-			[A1, A2, A3],
-			[B1, B2, B2]
-		];
-		easier = [B3];
-
-		games = [
-			[0, 1, A1, A2, A3],
-			[1, 1, B1, B2, B3],
-			[0, 1, A2, A1, A3],
-			[1, 1, B2, B1, B3],
-			[0, 1, A3, A1, A2],
-			[1, 0, B3, B1, B2]
-		];
-	}
-
-	document.getElementById("header").style.display = 'none';
-	start_turn();
+	timerId = id;
+	timeLeft = seconds;
+	originalTime = seconds;
+	document.getElementById('timer'+timerId).value = timeLeft;
+	timerInterval = setInterval(tick, 1000);
 }
 
-function start_turn()
+function stopTime()
 {
-	if(interval != null) {
-		clearInterval(interval);
-		interval = null;
-	}
-	if(timeout != null) {
-		clearTimeout(timeout);
-		timeout = null;
-	}
-	if(turn==null) {
-		turn = 0;
-	} else {
-		turn = (turn+1) % games.length;
-		word_index = (word_index+1) % word_count;
-	}
-	current_word = words[games[turn][1]][word_index];
-	current_drawer = games[turn][2];
-	display_turn_directions();
-}
-
-function display_turn_directions()
-{
-	var s = "<h4>Word #"+word_index+"</h4><h3><em>"+current_drawer+"</em> drawing.<br><em>";
-	for(var i=3; i<games[turn].length; ++i) {
-		if(i>3) s += ", ";
-		s += games[turn][i];
-	}
-	s += "</em> guessing.</h3>";
-	document.getElementById("main").innerHTML = 
-		s + 
-		"<center>" + 
-		"<div id='reveal_block'><input type='button' onClick='reveal()' value='Reveal' class='control_button'></div><br>" + 
-		"<div id='start_block'><input type='button' onClick='start()' value='Start Timer' class='control_button'></div><br>" + 
-		"<div id='timer'><h2>&nbsp;</h2></div><br>" + 
-		"<div id='scores'></div><br>" + 
-		"<div id='skip_block'><input type='button' onClick='skip()' value='Skip word' class='control_button'></div><br>" +
-		"<input type='button' onClick='start_turn()' value='New turn' class='control_button'>" +
-		"</center>";
-}
-
-function reveal()
-{
-	document.getElementById("reveal_block").innerHTML = "<h2>" + current_word + "</h2>";
-	timeout = setTimeout(unreveal, 2000);
-}
-
-function skip()
-{
-	word_index = (word_index+1) % word_count;
-	current_word = words[games[turn][1]][word_index];
-	display_turn_directions();
-}
-
-function unreveal()
-{
-	document.getElementById("reveal_block").innerHTML = "<input type='button' onClick='reveal()' value='Reveal' class='control_button'></div>";
-}
-
-function start()
-{
-	time = easier.includes(current_drawer) ? 90 : 60;
-	document.getElementById("timer").innerHTML = "<h2>"+time+"</h2>";
-	document.getElementById("reveal_block").innerHTML = "";
-	document.getElementById("skip_block").innerHTML = "";
-	document.getElementById("start_block").innerHTML = "<input type='button' onClick='guessed()' value='Guessed!' class='control_button'>";
-	interval = setInterval(tick, 1000);
-}
-
-function team_scores()
-{
-	var s = '<h4>';
-	for(var i=0; i<team.length; ++i) {
-		if(i>0) {
-			s += "<br><br>"
-		}
-		s += 'Team '+team[i].join(", ")+":<br><em>"+score[i]+" point"+(score[i]==1 ? '' : 's')+"</em>";
-	}
-	s += "</h4>";
-	return s;
-}
-
-function guessed()
-{
-	document.getElementById("applause_sound").play();
-	clearInterval(interval);
-	interval = null;
-	document.getElementById("timer").innerHTML = "<h2 class='green'>Guessed!</h2>";
-	document.getElementById("start_block").innerHTML = "";
-	++score[games[turn][0]];
-	document.getElementById("reveal_block").innerHTML = team_scores();
+	document.getElementById('timer'+timerId).value = 'Start '+originalTime+'s';
+	clearInterval(timerInterval);
+	timerInterval = null;
 }
 
 function tick()
 {
-	--time;
-	document.getElementById("timer").innerHTML = "<h2>"+time+"</h2>";
-	if(time==0) {
+	--timeLeft;
+	document.getElementById('timer'+timerId).value = timeLeft;
+	if(timeLeft<=0)
+	{
 		document.getElementById("horn_sound").play();
-		clearInterval(interval);
-		interval = null;
-		document.getElementById("timer").innerHTML = "<h2 class='red'>Time's Up!</h2>";
-		document.getElementById("start_block").innerHTML = "";
-		document.getElementById("reveal_block").innerHTML = team_scores();
+		document.getElementById('timer'+timerId).value = 'Start '+originalTime+'s';
+		clearInterval(timerInterval);
+		timerInterval = null;
 	}
 }
-
-/*
-team = [
-	['Valerie', 'Judith', 'Matt'],
-	['Lukasz', 'Bob', 'Shira', 'Iza']
-];
-games = [
-// team #, who's drawing, everyone's who's guessing...
-	[0, 'Valerie', 'Judith', 'Matt'], 
-	[1, 'Lukasz', 'Bob', 'Shira', 'Iza'],
-	[0, 'Judith', 'Valerie', 'Matt'],
-	[1, 'Bob', 'Lukasz', 'Shira', 'Iza'],
-	[1, 'Shira', 'Iza'],
-	[0, 'Matt', 'Valerie', 'Judith'],
-	[1, 'Shira', 'Lukasz', 'Bob', 'Iza'],
-	[0, 'Valerie', 'Judith', 'Matt'],
-	[1, 'Iza', 'Lukasz', 'Bob', 'Shira'],
-	[1, 'Lukasz', 'Iza'],
-	[0, 'Judith', 'Valerie', 'Matt'],
-	[1, 'Bob', 'Iza'],
-	[0, 'Matt', 'Valerie', 'Judith'],
-	[1, 'Iza', 'Lukasz', 'Bob', 'Shira']
-];
-
-
-games = [
-[0, 'Valerie', 'Judith'],	
-[1, 'Lukasz', 'Iza', 'Bob'],
-[0, 'Judith', 'Valerie'],
-[1, 'Bob', 'Lukasz', 'Iza'],
-[0, 'Valerie', 'Judith'],
-[1, 'Iza', 'Lukasz', 'Bob'],
-[0, 'Judith', 'Valerie'],
-[1, 'Lukasz', 'Iza'],
-[0, 'Valerie', 'Judith'],
-[1, 'Iza', 'Lukasz', 'Bob'],
-[0, 'Judith', 'Valerie'],
-[1, 'Bob', 'Iza']
-*/
 
 </script>
 </body>
