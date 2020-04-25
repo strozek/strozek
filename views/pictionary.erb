@@ -25,6 +25,10 @@
 			color: #999999;
 			margin: 0;
 		}
+		h3 {
+			font-size: 1em;
+			color: #000000;
+		}
 		.no-display {
 			display: none;
 		}
@@ -44,9 +48,12 @@
 <h2>Pictionary</h2>
 <h1 id="word">&nbsp;</h1>
 <input type="button" onClick="serveWord()" value="Show Word" class="button">
-<br>
-<br>
 <div id="admin" class="no-display">
+	<br>
+	<br>
+	<br>
+	<br>
+	<br>
 	<input type="button" id="timer1" onClick="startTime(1, 60)" value="Start 60s" class="button">
 	<input type="button" id="timer2" onClick="startTime(2, 90)" value="Start 90s" class="button">
 	<input type="button" onClick="stopTime()" value="Stop" class="button">
@@ -54,12 +61,24 @@
 	<br>
 	<input type="button" onClick="words = words1" value="Group 1" class="button">
 	<input type="button" onClick="words = words2" value="Group 2" class="button">
+	<br>
+	<br>
+	<input type="button" id="player" onClick="cyclePlayer()" value="Up Next" class="button">
+	<input type="button" onClick="addToScore()" value="Scored!" class="button">
+	<br>
+	<br>
+	<h3 id="score">&nbsp;</h2>
 </div>
 
 <script language="javascript">
 
 var words1 = ['Earth', 'Mickey Mouse', 'alive', 'alligator', 'angel', 'ant', 'ants', 'apple', 'arm', 'baby', 'backpack', 'ball', 'balloon', 'bark', 'baseball', 'basketball', 'bat', 'bathroom', 'beach', 'beak', 'bear', 'bed', 'bee', 'bench', 'bike', 'blanket', 'blocks', 'boat', 'bone', 'book', 'bounce', 'bow', 'bowl', 'box', 'boy', 'bracelet', 'branch', 'bread', 'bridge', 'broom', 'bug', 'bunk bed', 'bunny', 'bus', 'butterfly', 'button', 'camera', 'candle', 'candy', 'car', 'carrot', 'cat', 'caterpillar', 'chair', 'cherry', 'chicken', 'chimney', 'clock', 'cloud', 'coat', 'coin', 'comb', 'computer', 'cookie', 'corn', 'cow', 'crab', 'crayon', 'cube', 'cup', 'cupcake', 'curl', 'daisy', 'desk', 'diamond', 'dinosaur', 'dog', 'doll', 'door', 'dragon', 'dream', 'drum', 'duck', 'ear', 'ears', 'elephant', 'eyes', 'family', 'feet', 'finger', 'fire', 'flower', 'fly', 'football', 'fork', 'frog', 'ghost', 'giraffe', 'girl', 'glasses', 'grapes', 'grass', 'hair', 'hamburger', 'hand', 'hat', 'head', 'heart', 'helicopter', 'hippo', 'hook', 'horse', 'house', 'ice cream cone', 'inchworm', 'island', 'jacket', 'jar', 'jellyfish', 'key', 'king', 'kite', 'kitten', 'knee', 'ladybug', 'lamp', 'leaf', 'leg', 'lemon', 'light', 'line', 'lion', 'lips', 'lizard', 'lollipop', 'love', 'man', 'milk', 'monkey', 'monster', 'moon', 'mouse', 'mouth', 'music', 'nail', 'neck', 'night', 'nose', 'ocean', 'octopus', 'orange', 'oval', 'owl', 'pants', 'pencil', 'person', 'pie', 'pig', 'pillow', 'plant', 'purse', 'rabbit', 'rain', 'ring', 'river', 'robot', 'sea', 'sea turtle', 'seashell', 'sheep', 'ship', 'shirt', 'shoe', 'skateboard', 'slide', 'smile', 'snowflake', 'snowman', 'socks', 'spider', 'spider web', 'square', 'stairs', 'star', 'starfish', 'suitcase', 'sun', 'sunglasses', 'swimming pool', 'swing', 'table', 'tail', 'train', 'tree', 'triangle', 'truck', 'turtle', 'water', 'whale', 'wheel', 'window', 'woman', 'worm', 'zebra', 'zigzag', 'zoo'];
 var words2 = ['America', 'Jupiter', 'aircraft', 'airport', 'alarm clock', 'ambulance', 'apologize', 'apple pie', 'artist', 'astronaut', 'aunt', 'baby', 'babysitter', 'back', 'backbone', 'bag', 'bagel', 'baggage', 'bagpipe', 'baker', 'bakery', 'bald eagle', 'banana peel', 'banana split', 'banjo', 'barn', 'barrel', 'basket', 'bat', 'bathroom scale', 'bathtub', 'beaver', 'bicycle', 'birthday', 'black hole', 'blanket', 'blimp', 'blowfish', 'bomb', 'bottle', 'box', 'braid', 'brain', 'breakfast', 'brick', 'bucket', 'bus', 'bushes', 'butcher', 'button', 'cabin', 'cage', 'camera', 'campfire', 'cannon', 'canoe', 'cape', 'carpet', 'cash', 'cast', 'castle', 'cave', 'ceiling fan', 'celery', 'cell phone', 'cello', 'cemetery', 'chain', 'chalk', 'cheerleader', 'cheetah', 'chef', 'chess', 'chin', 'circus', 'city', 'class', 'closed', 'clown', 'clownfish', 'coal', 'coast', 'cobra', 'cobweb', 'coconut', 'cocoon', 'coil', 'coin', 'college', 'colored pencil', 'computer', 'connect', 'contain', 'cook', 'corn', 'corndog', 'corner', 'cotton candy', 'cougar', 'cover', 'cowboy', 'coyote', 'crack', 'cracker', 'crater', 'crib', 'cricket', 'crown', 'crust', 'cul-de-sac', 'curb', 'curtain', 'curtains', 'curve', 'dad', 'daddy longlegs', 'day', 'dimple', 'dirt', 'doctor', 'dog leash', 'doghouse', 'dollar', 'dominoes', 'donkey', 'door', 'doorknob', 'doormat', 'dragonfly', 'draw', 'dress', 'drill', 'drink', 'drums', 'drumstick', 'earmuffs', 'east', 'eclipse', 'elbow', 'electrical outlet', 'envelope', 'eye patch', 'face', 'fairies', 'family', 'fan', 'farm', 'farmer', 'faucet', 'fern', 'ferry', 'field', 'fire hydrant', 'firefighter', 'fishing pole', 'fist', 'flamingo', 'flashlight', 'floor', 'food', 'fox', 'frame', 'french fries', 'frog', 'front porch', 'frying pan', 'full moon', 'fur', 'garage', 'globe', 'glove', 'glue', 'go', 'gold', 'goldfish', 'grape', 'graph', 'gravity', 'growl', 'guitar', 'gum', 'gumball', 'hail', 'hair dryer', 'hairbrush', 'half', 'hammer', 'harmonica', 'harp', 'headband', 'heel', 'helicopter', 'hero', 'highway', 'hill', 'hippopotamus', 'hiss', 'homeless', 'honey', 'hook', 'hopscotch', 'horse', 'hospital', 'hot-air balloon', 'hug', 'hunter', 'hurdle', 'ice', 'ink', 'insect', 'ironing board', 'island', 'jacket', 'jail', 'janitor', 'jar', 'jelly', 'jet ski', 'jump', 'kettle', 'king', 'kiss', 'knot', 'ladder', 'ladybug', 'lake', 'latitude', 'laundry basket', 'lawn mower', 'leak', 'lemon', 'letter', 'light bulb', 'light switch', 'lighthouse', 'lightsaber', 'limousine', 'lipstick', 'liquid', 'list', 'lobster', 'lock', 'log', 'lucky', 'lunchbox', 'lung', 'magazine', 'magic', 'magic carpet', 'magnet', 'mail', 'mailbox', 'map', 'marker', 'marry', 'marshmallow', 'mask', 'match', 'mattress', 'maze', 'meat', 'merry-go-round', 'middle', 'mini blinds', 'minivan', 'molecule', 'monkey', 'monster', 'mop', 'mouse pad', 'mud', 'muffin', 'mug', 'museum', 'mushroom', 'napkin', 'neck', 'necktie', 'neighbor', 'nest', 'newborn', 'noon', 'north', 'notepad', 'nun', 'nurse', 'oar', 'ocean', 'onion', 'open', 'orange', 'organ', 'outer space', 'outside', 'owl', 'pail', 'palace', 'pan', 'pancake', 'panda', 'pantry', 'paperclip', 'parachuting', 'park', 'parka', 'password', 'paw', 'pea', 'peach', 'pear', 'peck', 'pelican', 'pencil', 'penny', 'photograph', 'piano', 'pickle', 'picture frame', 'pie', 'pillowcase', 'pineapple', 'pinecone', 'ping pong', 'pinwheel', 'pipe', 'pirate', 'pitchfork', 'pizza', 'plant', 'playground', 'plug', 'pocket', 'pogo stick', 'poodle', 'pool', 'pop', 'popcorn', 'porch', 'porcupine', 'porthole', 'positive', 'powder', 'present', 'pretzel', 'princess', 'printer', 'propeller', 'puddle', 'pulley', 'puppet', 'purse', 'puzzle', 'queen', 'radish', 'railroad', 'rainstorm', 'rake', 'rat', 'rhinoceros', 'ribbon', 'rice', 'ring', 'river', 'rocket', 'roller blading', 'rolly polly', 'roof', 'room', 'rose', 'rug', 'run', 'sack', 'safe', 'sail', 'salt', 'salt and pepper', 'saltwater', 'sand', 'sandal', 'save', 'saw', 'saxophone', 'scale', 'scientist', 'scissors', 'screwdriver', 'sea turtle', 'seal', 'see', 'seed', 'seesaw', 'shadow', 'shake', 'shallow', 'shampoo', 'shark', 'shelf', 'ship', 'shipwreck', 'shoulder', 'shovel', 'sidekick', 'sidewalk', 'silverware', 'sink', 'skateboard', 'ski', 'skunk', 'sky', 'sleep', 'slide', 'slope', 'smoke', 'snowball', 'soccer', 'soda', 'solar system', 'soup', 'spaceship', 'spare', 'spine', 'sponge', 'spool', 'spoon', 'spot', 'spring', 'squirrel', 'squirt gun', 'stain', 'stamp', 'start', 'stem', 'step', 'stick', 'stocking', 'stomach', 'store', 'storm', 'stove', 'strap', 'straw', 'strawberry', 'string', 'submarine', 'subway', 'summer', 'swing', 't-shirt', 'tadpole', 'tail', 'tape', 'taxi', 'teacher', 'teapot', 'telephone', 'television', 'tennis', 'thermometer', 'thief', 'third plate', 'three-toed sloth', 'throne', 'tie', 'tightrope', 'time', 'timer', 'tire', 'toast', 'tongue', 'tooth', 'toothbrush', 'torch', 'towel', 'tower', 'toy', 'trampoline', 'trap', 'trapeze', 'trip', 'trophy', 'trunk', 'turkey', 'tusk', 'twig', 'unicycle', 'unite', 'vase', 'video camera', 'waffle', 'wagon', 'waist', 'wallet', 'watch', 'watering can', 'wave', 'wedge', 'well', 'wheelbarrow', 'wheelchair', 'whistle', 'wick', 'windmill', 'window', 'wing', 'wood', 'wreath', 'wrist', 'yacht', 'yardstick', 'yarn', 'yo-yo', 'zebra', 'zipper', 'zoo'];
+
+var players = [[0, 'Valerie'], [1, 'Lukasz'], [0, 'Judith'], [1, 'Bob'], [0, 'Iza'], [1, 'Audrey'], [0, 'Matt'], [1, 'Shira']];
+var score = [0, 0];
+var teams = ["Val/Judith/Iza/Matt", "Lukasz/Bob/Audrey/Shira"];
+var currentPlayer = -1;
 
 <% if(@word_group=='0') %>
 	var words = words1;
@@ -110,6 +129,18 @@ function tick()
 		clearInterval(timerInterval);
 		timerInterval = null;
 	}
+}
+
+function cyclePlayer()
+{
+	currentPlayer = (currentPlayer+1)%players.length;
+	document.getElementById('player').value = players[currentPlayer][1];
+}
+
+function addToScore()
+{
+	score[players[currentPlayer][0]] += 1;
+	document.getElementById('score').innerHTML = "Team "+teams[0]+": "+score[0]+"<br>Team "+teams[1]+": "+score[1];
 }
 
 </script>
