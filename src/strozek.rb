@@ -76,6 +76,21 @@ class Strozek < Sinatra::Base
 		erb :pictionary
 	end
 
+	get '/wordgame/:player' do
+		@player = params[:player]
+		erb :wordgame
+	end
+
+	get '/wordgame/commands/list' do
+		payload = File.read("./data/wordgame.txt")
+		return payload
+	end
+
+	post '/wordgame/commands' do
+		File.write("./data/wordgame.txt", params.to_json)
+		return {success: true}.to_json
+	end
+
 	get '/loveandmath' do
 		erb :loveandmath
 	end

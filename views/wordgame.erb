@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Word Game by Lukasz</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="mobile-web-app-capable" content="yes">
+	<link rel="shortcut icon" type="image/ico" href="/images/wordgame/favicon.png" />
+  	<script src="/js/jquery-1.9.1.js"></script>
+	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Bitter:700" rel="stylesheet">
+	<style>
+		body {
+			font-family: 'Roboto', sans-serif;
+			text-align: center;
+			padding: 20px 10px 20px 10px;
+		}
+		h1 {
+			font-size: 1.8em;
+			font-weight: bold;
+			color: #0006b1;
+			padding: 20px 0px 20px 0px;
+		}
+		h2 {
+			font-family: 'Bitter', serif;
+			font-size: 1.5em;
+			color: #999999;
+			margin: 0;
+		}
+		h3 {
+			font-size: 1.25em;
+			color: #000000;
+		}
+		.no-display {
+			display: none;
+		}
+		button {
+			border: 1px solid #777777;
+			font-size: 1.25em;
+			margin: 10px;
+		}
+		i {
+			color: #33bb33;
+			font-style: normal;
+		}
+		#clientButton {
+			display: none;
+			margin-left: auto;
+			margin-right: auto;
+		}
+	</style>
+</head>
+<body>
+<audio controls id="horn_sound" class="no-display">
+	<source src="/media/pictionary/airhorn.mp3" type="audio/mpeg">
+</audio>
+<h2>Hi, <%= @player %>.</h2>
+<h2 id="display"></h2>
+<h3 id="cheat"></h3>
+<h3 id="scores"></h3>
+<button onclick="nextClientWord()" id="clientButton"></button><br>
+<script>
+	setInterval(pingForCommand, 2000);
+
+	var player = "<%= @player %>";
+	var players = [
+		{name:"Valerie", team:0, wordBank:1}, // wordBank: 0 (easier), 1 (harder)
+		{name:"Iza", team:1, wordBank:0, showWords:true},
+		{name:"Judith", team:2, wordBank:1},
+		{name:"Matt", team:3, wordBank:1},
+		{name:"Bob", team:0, wordBank:1},
+		{name:"Shira", team:1, wordBank:0},
+		{name:"Audrey", team:2, wordBank:1},
+		{name:"Lukasz", team:3, wordBank:1}
+	];
+	var current = null;
+	var wordsToGuess = null;
+	var wordToGuessIndex = 0;
+
+
+	function teammates(id)
+	{
+		var result = [];
+		for(var p in players) {
+			if(players[p].team == players[id].team && players[p].name != players[id].name) {
+				result.push(players[p].name);
+			}
+		}
+		return result;
+	}
+
+	function nextPlayer()
+	{
+		current = (current+1)%players.length;
+	}
+
+	function clientButton(label)
+	{
+		if(label!=null) {
+			document.getElementById('clientButton').style.display = "block";
+			document.getElementById('clientButton').innerHTML = label;
+		} else {			
+			document.getElementById('clientButton').style.display = "none";
+		}
+	}
+
+	function pingForCommand()
+	{
+		$.get(
+			"/wordgame/commands/list",
+			function(data) {
+				
+				var current = parseInt(data['current']);
+
+				// command
+				if(data['command']=="ready") {
+					if(player == players[current].name) {
+						document.getElementById('display').innerHTML = "Ready to give clues?";
+						wordToGuessIndex = 0;
+					} else if(teammates(current).includes(player)) {
+						document.getElementById('display').innerHTML = "Ready to guess the word?";
+					} else {
+						document.getElementById('display').innerHTML = players[current].name+" will give clues.<br>"+teammates(current).join(', ')+" will guess.";
+					}
+					clientButton(null);
+				}
+				if(data['command']=="play") {
+					if(player == players[current].name) {
+						wordsToGuess = data['wordsToGuess'];
+						document.getElementById('display').innerHTML = "The word is <i>"+wordsToGuess[wordToGuessIndex]+"</i>";
+						clientButton("next");
+					} else if(teammates(current).includes(player)) {
+						document.getElementById('display').innerHTML = "You're guessing now!";
+						clientButton(null);
+					} else {
+						document.getElementById('display').innerHTML = players[current].name+" is giving clues.<br>"+teammates(current).join(', ')+" guessing.";
+						clientButton(null);
+					}
+				}
+				if(data['command']=="timesup") {
+					document.getElementById('display').innerHTML = "Time's Up!";
+					clientButton(null);
+				}
+
+				// scores
+				var allTeammates = [];
+				for(var p in players) {
+					if(allTeammates[players[p].team]==undefined) {
+						allTeammates[players[p].team] = []
+					}
+					allTeammates[players[p].team].push(players[p].name);
+				}
+				scores_html = ''
+				for(var t in allTeammates) {
+					scores_html += allTeammates[t].join(' + ')+": <b>"+data['score'][t]+"</b><br>";
+				}
+				document.getElementById('scores').innerHTML = scores_html;
+			},
+			"json");
+	}
+
+	function nextClientWord()
+	{
+		++wordToGuessIndex;
+		document.getElementById('display').innerHTML = "The word is <i>"+wordsToGuess[wordToGuessIndex]+"</i>";
+	}
+
+	// admin interface
+
+	// words from
+
+	var _words = [];
+	_words[0] = ['worm', 'eyebrow', 'lion', 'pear', 'talk', 'glasses', 'shirt', 'spoon', 'box', 'wind', 'green', 'wolf', 'snow', 'couch', 'fix', 'flashlight', 'princess', 'broken', 'plate', 'neighbor', 'roller coaster', 'bridge', 'mailbox', 'flower', 'white', 'sandcastle', 'triangle', 'thunder', 'monster', 'long', 'lizard', 'coffee shop', 'music', 'fire engine', 'star', 'cook', 'tired', 'slow', 'outer space', 'brave', 'horse', 'niece', 'elephant', 'tractor', 'elevator', 'light bulb', 'broccoli', 'cough', 'heart', 'calculator', 'stick', 'cat', 'tree house', 'watermelon', 'chocolate', 'bird\'s nest', 'fast', 'hungry', 'red', 'frown', 'chew', 'pepper', 'sick', 'baby', 'door', 'banana', 'finger', 'fence', 'big', 'swimming pool', 'sun', 'church', 'yo-yo', 'boy', 'bag', 'alligator', 'mouse', 'birthday', 'winter', 'beach', 'tree', 'teacher', 'king', 'telephone', 'eye', 'water', 'jelly', 'balloon', 'toothbrush', 'pants', 'mom', 'body', 'bike', 'toilet paper', 'baseball', 'pig', 'leaf blower', 'fire', 'school', 'belt', 'pajamas', 'mud', 'ice cream cone', 'arm', 'drums', 'spider', 'shark', 'seashell', 'computer', 'grandma', 'pillow', 'kite', 'homework', 'ladybug', 'bed', 'bird', 'gum', 'book', 'dress', 'queen', 'puppy', 'happy', 'doctor', 'frog', 'blanket', 'popsicle', 'pen', 'sandwich', 'boat', 'dad', 'lunchbox', 'ice', 'bottle', 'elbow', 'penny', 'broom', 'dog', 'rose', 'picnic', 'chair', 'duck', 'hair', 'zoo', 'party', 'piano', 'key', 'apple', 'chalk', 'park', 'clock', 'pencil', 'hill', 'flag', 'lollipop', 'candle', 'flower', 'basketball', 'hug', 'clown', 'paper', 'mountain', 'nose', 'cow', 'grown-up', 'grass', 'rainbow', 'hide-and-seek', 'pocket', 'grape', 'cowboy', 'doll', 'forehead', 'football', 'crayon', 'desk', 'TV', 'bedtime', 'hopscotch', 'dump truck', 'cold', 'paint', 'ear', 'moon'];
+	// OLD WORDS: 'tuba', 'singer', 'race', 'candy', 'student', 'day', 'jump', 'hurt', 'laundry', 'blue', 'sad', 'old', 'guitar', 'athlete', 'night', 'knee', 'wedding', 'bat', 'buy', 'trash can', 'freckle', 'stream', 'quiet', 'mop', 'swing', 'radio', 'square', 'Monday', 'school bus', 'poem', 'scared', 'draw', 'type', 'short', 'stairs', 'asleep', 'motorcycle', 'lunch', 'fog', 'new', 'straw', 'push', 'dirty', 'girl', 'helicopter', 'playground', 'tiger', 'tornado', 'lime', 'leg', 'salt', 'ankle', 'cake', 'shoelace', 'wheelchair', 'goodbye'
+	_words[1] = ['dress shirt', 'reimbursement', 'capitalism', 'step-daughter', 'applause', 'jig', 'jade', 'blunt', 'application', 'rag', 'squint', 'intern', 'sow\'s ear', 'brainstorm', 'sling', 'half', 'pinch', 'leak', 'skating rink', 'jog', 'jammin\'', 'shrink ray', 'dent', 'scoundrel', 'escalator', 'cell phone charger', 'kitchen knife set', 'sequins', 'ladder rung', 'flu', 'scuff mark', 'mast', 'sash', 'modern', 'ginger', 'clockwork', 'mess', 'mascot', 'runt', 'chain', 'scar tissue', 'suntan', 'pomp', 'scramble', 'sentence', 'first mate', 'cuff', 'cuticle', 'fortnight', 'riddle', 'spool', 'full moon', 'forever', 'rut', 'hem', 'new', 'freight train', 'diver', 'fringe', 'humidifier', 'handwriting', 'dawn', 'dimple', 'gray hairs', 'hedge', 'plank', 'race', 'publisher', 'fizz', 'gem', 'ditch', 'wool', 'plaid', 'fancy', 'ebony and ivory', 'feast', 'Murphy\'s Law', 'billboard', 'flush', 'inconceivable', 'tide', 'midsummer', 'population', 'my', 'elm', 'organ', 'flannel', 'hatch', 'booth','Aristotle', 'Tom Hanks', 'Walt Disney', 'Carrie Fisher', 'Galileo', 'Mr. Rogers', 'Leonardo DiCaprio', 'Abraham Lincoln', 'Paul McCartney', 'Michael Phelps', 'Plato', 'Lewis and Clark', 'Johnny Depp', 'Leonardo Da Vinci', 'Beethoven', 'King George', 'Tiger Woods', 'Benjamin Franklin', 'Mother Teresa', 'Michael J. Fox', 'Bill Gates', 'Albert Einstein', 'Victor Hugo', 'Justin Bieber', 'the Wright Brothers', 'Bill Clinton', 'Bruce Willis', 'John Williams', 'the Beatles', 'Eddie Murphy', 'Steve Jobs', 'Harrison Ford', 'Shakespeare', 'Rembrandt', 'George Lucas', 'Christopher Columbus', 'Buzz Aldrin', 'Brad Pitt', 'David Beckham', 'C. S. Lewis', 'Rosa Parks', 'Egypt', 'skiing', 'the Bahamas', 'luggage', 'Europe', 'beach house', 'packing', 'camping', 'rainforest', 'Colorado river', 'airport', 'summer', 'Canada', 'sunscreen', 'Disneyland', 'passport', 'Arizona', 'Aruba', 'sightseeing', 'resort', 'water park', 'customs', 'America', 'Africa', 'tourist', 'island', 'lake', 'sunny weather', 'airport security', 'cruise ship', 'Mexico', 'sleeping bag', 'hotel', 'mountain biking', 'Paris', 'road trip', 'Bermuda', 'Jamaica', 'Spain', 'snowboarding', 'Say "cheese"', 'map', 'trains', 'Alaska', 'camera', 'theme park', 'national park', 'tour guide', 'relax', 'Delaware', 'airplane', 'bug spray', 'scenery', 'layover', 'Are we there yet?', 'fanny pack', 'river rafting', 'beach ball', 'kayak', 'movies', 'hiking', 'stroll', 'surfboard', 'time off', 'swimming pool', 'bird watching', 'Broadway', 'Universal Studios', 'binoculars', 'shopping', 'Rome', 'Maine', 'bicycle', 'snow cone', 'vacation day', 'boardwalk', 'Six Flags', 'airline', 'lazy river', 'Florida', 'Texas', 'South Dakota', 'Istanbul', 'the Grand Canyon', 'June', 'holiday', 'safari', 'Las Vegas', 'suitcase', 'Turkey', 'hang glider', 'first class', 'condo', 'honeymoon', 'scuba diving', 'China', 'Africa', 'Italy', 'Hawaii', 'family reunion', 'Scottland', 'London', 'Four Corners', 'backpacking', 'Ireland', 'California', 'Switzerland', 'July', 'Tokyo', 'Mount Rushmore', 'coral reef', 'summer', 'France', 'Athens', 'Vienna', 'England', 'Washington D.C.', 'money belt', 'Los Angeles', 'Boston', 'party'];
+	// OLD WORDS: 'taxi cab', 'standing ovation', 'alarm clock', 'tool', 'banana peel', 'flagpole', 'money', 'wallet', 'ballpoint pen', 'sunburn', 'wedding ring', 'spy', 'baby-sitter', 'aunt', 'acne', 'bib', 'puzzle piece', 'pawn', 'astronaut', 'tennis shoes', 'blue jeans', 'twig', 'outer space', 'banister', 'batteries', 'doghouse', 'campsite', 'plumber', 'bedbug', 'throne', 'tiptoe', 'log', 'mute', 'pogo stick', 'stoplight', 'ceiling fan', 'bedspread', 'bite', 'stove', 'windmill', 'nightmare', 'stripe', 'spring', 'wristwatch', 'eat', 'matchstick', 'gumball', 'bobsled', 'bonnet', 'flock', 'sprinkler', 'living room', 'laugh', 'snuggle', 'sneeze', 'bud', 'elf', 'headache', 'slam dunk', 'Internet', 'saddle', 'ironing board', 'bathroom scale', 'kiss', 'shopping cart', 'shipwreck', 'funny', 'glide', 'lamp', 'candlestick', 'grandfather', 'rocket', 'home movies', 'seesaw', 'rollerblades', 'smog', 'grill', 'goblin', 'coach', 'claw', 'cloud', 'shelf', 'recycle', 'glue stick', 'Christmas carolers', 'front porch', 'earache', 'robot', 'foil', 'rib', 'robe', 'crumb', 'paperback', 'hurdle', 'rattle', 'fetch', 'date', 'iPod', 'dance', 'cello', 'flute', 'dock', 'prize', 'dollar', 'puppet', 'brass', 'firefighter', 'huddle', 'easel', 'pigpen', 'bunk bed', 'bowtie', 'fiddle', 'dentist', 'baseboards', 'letter opener', 'photographer', 'magic', 'Old Spice', 'monster', 'whatever', 'buddy', 'sip', 'chicken coop', 'blur', 'chime', 'bleach', 'clay', 'blossom', 'cog', 'twitterpated', 'wish', 'through', 'feudalism', 'whiplash', 'cot', 'blueprint', 'beanstalk', 'think', 'cardboard', 'darts', 'inn', 'Zen', 'crow\'s nest', 'BFF', 'sheriff', 'tiptop', 'dot', 'bob', 'garden hose', 'blimp'
+
+	var _tick = null;
+	var _time = 0;
+	var _command = "";
+	var _current = 0;
+	var _score = null;
+	var _wordsToGuess = [];
+	var _wordIndex = [0, 0];
+	var _mostRecentWord = null;
+
+	zeroScore();
+
+	function zeroScore()
+	{
+		_score = [];
+		for(var p in players) {
+			_score[players[p].team] = 0;
+		}
+	}
+
+	function sendCommands()
+	{
+		var payload = {
+			command: _command,
+			current: _current,
+			score: _score,
+			wordsToGuess: _wordsToGuess
+		}
+		$.post(
+			"/wordgame/commands",
+			payload,
+			function(data) {
+				document.getElementById('lastSent').innerHTML = new Date().toLocaleTimeString();
+			},
+			"json");
+	}
+
+	function newGame()
+	{
+		_command = "ready";
+		_current = 0;
+		zeroScore();
+		document.getElementById('nextButton').innerHTML = "switch to "+players[(_current+1)%players.length].name;
+		sendCommands();
+	}
+
+	function start()
+	{
+		_command = "play";
+		var bank = players[_current].wordBank;
+		_wordsToGuess = [];
+		for(var i=0; i<15; ++i) {
+			_wordsToGuess[i] = _words[bank][(_wordIndex[bank]+i) % _words[bank].length];
+		}
+		_mostRecentWord = _words[bank][_wordIndex[bank]];
+		document.getElementById('pastWords').innerHTML = '';
+		document.getElementById('cheat').innerHTML = (players[_current].showWords==true) ? _mostRecentWord : '';
+		_wordIndex[bank] = (_wordIndex[bank]+1) % _words[bank].length;
+		sendCommands();
+		_time = 60;
+		_tick = setInterval(tick, 1000);
+	}
+
+	function tick()
+	{
+		--_time;
+		document.getElementById('startButton').innerHTML = _time;
+		if(_time<=0) {
+			document.getElementById('horn_sound').play();
+			clearInterval(_tick);
+			_command = "timesup";
+			document.getElementById('startButton').innerHTML = "start";
+			sendCommands();
+		}
+	}
+
+	function nextWord(scored)
+	{
+		document.getElementById('pastWords').innerHTML = document.getElementById('pastWords').innerHTML + '<br><span style="color:#' + (scored ? '009900' : '990000') + '">' + _mostRecentWord + '</span>';
+		if(scored) {
+			++_score[players[_current].team];
+		}
+		var bank = players[_current].wordBank;
+		_mostRecentWord = _words[bank][_wordIndex[bank]];
+		document.getElementById('cheat').innerHTML = (players[_current].showWords==true) ? _mostRecentWord : '';
+		_wordIndex[bank] = (_wordIndex[bank]+1) % _words[bank].length;
+		sendCommands();
+	}
+
+	function nextPlayer()
+	{
+		_command = "ready";
+		_current = (_current+1)%players.length;
+		sendCommands();
+		document.getElementById('nextButton').innerHTML = "switch to "+players[(_current+1)%players.length].name;
+	}
+
+</script>
+
+<hr>
+<% if(@player=="Lukasz") %>
+<button onclick="newGame()" style="background-color:#ffcccc">restart game</button><br>
+<button onclick="start()" id="startButton">start</button>
+<button onclick="_time += 30">+ 30s</button>
+<br>
+<button onclick="nextWord(true)">score!</button>
+<button onclick="nextWord(false)">skip</button><br>
+<button onclick="nextPlayer()" id="nextButton">switch</button>
+<br>
+
+Last command sent <span id="lastSent">n/a</span>.<br>
+<b>Words processed</b>:<span id="pastWords"></span>
+
+<script>
+	$.get(
+		"/wordgame/commands/list",
+		function(data) {		
+			_current = parseInt(data['current']);
+			_command = data['command'];
+			_score = data['score'];
+			_wordsToGuess = data['wordsToGuess'];
+			document.getElementById('nextButton').innerHTML = "switch to "+players[(_current+1)%players.length].name;
+		},
+		"json");
+</script>
+
+<% end %>
+
+</body>
+<html>
