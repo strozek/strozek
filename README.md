@@ -12,10 +12,14 @@ A collection of personal utilities, demos, and showcases
 * `/zoom`: zoom effect generator (see https://www.elevenseconds.com/tvd/the-zoom-effect)
 * `/disappear/bw/:text`: create an image that includes the string "text" that disappears when printed in B&W (see https://www.elevenseconds.com/tvd/disappearing-messages)
 * `/disappear/color/:text/:distraction`: create an image that includes a decoy string "distraction" that disappears and a secret "text" appears when printed in B&W
+* `/pictionary/:word_group`: a site that helps run family pictionary games
+* `/wordgame/:player`: a site that helps run family taboo games
+** `/wordgame/commands/list`
+** POST `/wordgame/commands`
+* `/loveandmath` or `https://loveandmathematics.us`: our wedding website
 * `/crowdsource`: the crowdsourcing project (see https://www.elevenseconds.com/tvd/crowdsourced-art), written in 2009
-* `/crowdsource/makeMeAToken/:salt/:amount`: creae a token, given the secret salt, and the number of pixels
-* `/crowdsource/listMeTheTokens/:salt`: list all tokens in the system
-* `/pictionary`: a site that helps run family pictionary games
+** `/crowdsource/makeMeAToken/:salt/:amount`: creae a token, given the secret salt, and the number of pixels
+** `/crowdsource/listMeTheTokens/:salt`: list all tokens in the system
 * `/static_sites/A-Level-Allocator/enter.html`: An exploration tool for British Mathematics A-Levels (see https://www.elevenseconds.com/archive/early-websites-2001), built in 2001
 * `/static_sites/German-Grammar-Test/index.html`: A simple german grammar test (see https://www.elevenseconds.com/archive/early-websites-2001), built in 2001
 * `/static_sites/js-objects.html`: A demo of jquery UI-like objects I built in 2005 (see https://www.elevenseconds.com/archive/javascript-objects-2005)
