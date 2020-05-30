@@ -126,7 +126,12 @@
 				if(data['command']=="play") {
 					if(player == players[current].name) {
 						wordsToGuess = data['wordsToGuess'];
-						document.getElementById('display').innerHTML = "The word is <i>"+wordsToGuess[wordToGuessIndex]+"</i>";
+						if(wordToGuessIndex>=BATCH) {
+							document.getElementById('display').innerHTML = "You're done with your round!";
+						}
+						else {
+							document.getElementById('display').innerHTML = "The word is <i>"+wordsToGuess[wordToGuessIndex]+"</i>";
+						}
 						clientButton("next");
 					} else if(teammates(current).includes(player)) {
 						document.getElementById('display').innerHTML = "You're guessing now!";
