@@ -76,16 +76,15 @@
 
 	var player = "<%= @player %>";
 	var players = [ // wordBank: 0 (easier), 1 (harder)
-		{name:"Lukasz", team:0, wordBank:1},
+		{name:"Audrey", team:0, wordBank:1, showWords:true},
 		{name:"Iza", team:1, wordBank:0, showWords:true},
 		{name:"Valerie", team:2, wordBank:1, showWords:true},
+		{name:"Shira", team:3, wordBank:1},
 
-		{name:"Audrey", team:0, wordBank:1},
-		{name:"Judith", team:1, wordBank:0, showWords:true},
-		{name:"Bob", team:2, wordBank:1, showWords:true},
-
-//		{name:"Matt", team:1, wordBank:1, showWords:true},
-//		{name:"Shira", team:3, wordBank:1},
+		{name:"Judith", team:0, wordBank:1, showWords:true},
+		{name:"Bob", team:1, wordBank:0, showWords:true},
+		{name:"Matt", team:2, wordBank:1, showWords:true},
+		{name:"Lukasz", team:3, wordBank:1},
 	];
 	var current = null;
 	var wordsToGuess = null;
