@@ -29,9 +29,9 @@ class Strozek < Sinatra::Base
  	set :public_folder, './public'
  	set :views, './views'
 
-  get '/' do
-    erb :index
-  end
+  	get '/' do
+    	erb :index
+  	end
 
 	get '/status' do
 		"OK"

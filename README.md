@@ -3,6 +3,7 @@ strozek
 
 A collection of personal utilities, demos, and showcases
 
+* `/`: pulls up the static about page (generated with hugo)
 * `/status`: returns `OK`
 * `/info`: returns host/environment name
 * `/dice`: returns an animation of rolled dice (see https://www.elevenseconds.com/tvd/from-the-archives-ephemeral-dice-and-fire-effects)
