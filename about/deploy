@@ -1,0 +1,3 @@
+cp -r public/index.html ../views/index.erb
+rm -rf ../public/static_sites/about
+cp -r public/static_sites/about ../public/static_sites/
