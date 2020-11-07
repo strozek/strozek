@@ -39,24 +39,62 @@ A collection of personal utilities, demos, and showcases
 * `tmp/sockets/unicorn.sock`: (prod only) Unicorn's socket
 * `version.txt`: one line of the format X.Y.Z (e.g. 1.0.0), autoincremented when `scripts/up` is run to deploy to prod
 
-#### Localhost system setup
+
+#### localhost system setup
+
 ```shell
-# install XCode
-# ensure ~/.ssh/config is set up
-# ruby 2.3.7p456 (2018-03-28 revision 63024) [universal.x86_64-darwin17]
+### prep
+
+# install brew - check https://brew.sh/ for up-to-date instructions
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+
+# install XCode - may already be installed with brew
 xcode-select --install
+
+# not sure this is needed - last time I tried, gave me an error
 sudo xcodebuild -license
-sudo gem install sinatra	# sinatra (2.0.4)
-sudo gem install thin		# thin (1.7.2)
-sudo gem install sequel		# sequel (5.12.0)
-sudo gem install sqlite3	# sqlite3 (1.3.13, 1.3.11)
-sudo gem install rerun
+
+# ensure all dotfiles are set up, especially ~/.ssh/config
+
+### get ruby 2.7.1
+
+curl -L https://get.rvm.io | bash -s stable
+
+# put the following in ~/.bash_profile:
+export GEM_HOME="$GEM_HOME:$HOME/.rvm/bin"
+export GEM_PATH="$GEM_PATH:$HOME/.rvm/bin"
+
+# needed if shell window not closed/reopened
+source /Local/Users/strozek/.rvm/scripts/rvm
+
+rvm get stable --auto-dotfiles
+sudo chown -R $(whoami) /usr/local/bin
+chmod u+w /usr/local/bin
+rvm install 2.7.1
+rvm --default use 2.7.1
+
+# shared
+gem install rack 	# 2.2.3
+gem install sinatra 	# 2.1.0
+gem install unicorn 	# 5.7.0
+
+# shared - local-only
+gem install thin		# 1.7.2
+gem install rerun 		# 0.13.0
+
+# only strozek
+gem install sequel		# sequel (5.38.0)
+gem install sqlite3		# sqlite3 (1.4.2)
 brew install ImageMagick@6
+gem install rmagick		# rmagick (4.1.2)
+
+# to run locally
+./scripts/local
+```
+
 # maybe, brew install rbenv ruby-build
 # maybe, install Command Line Tools MacOS 10.14 for XCode 10.3 from https://developer.apple.com/download/more/
 open /Library/Developer/CommandLineTools/Packages/ # and run the installer there
-sudo gem install rmagick
-# rerun 'rackup -p 4567'
 ```
 
 #### Bitnami production setup
