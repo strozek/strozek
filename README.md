@@ -92,11 +92,6 @@ gem install rmagick		# rmagick (4.1.2)
 ./scripts/local
 ```
 
-# maybe, brew install rbenv ruby-build
-# maybe, install Command Line Tools MacOS 10.14 for XCode 10.3 from https://developer.apple.com/download/more/
-open /Library/Developer/CommandLineTools/Packages/ # and run the installer there
-```
-
 #### Bitnami production setup
 ```shell
 sudo dpkg-reconfigure tzdata

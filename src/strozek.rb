@@ -29,6 +29,21 @@ class Strozek < Sinatra::Base
  	set :public_folder, './public'
  	set :views, './views'
 
+	@host = /loveandmathematics.us/
+	get '/', :host_name => @host do
+		erb :loveandmath
+	end
+
+	@host = /lukasz.work/
+	get '/', :host_name => @host do
+		erb :index
+	end
+
+	@host = /strozek.com/
+  	get '/', :host_name => @host do
+    	erb :index
+  	end
+
   	get '/' do
     	erb :index
   	end
@@ -97,16 +112,6 @@ class Strozek < Sinatra::Base
 
 	get '/loveandmath' do
 		erb :loveandmath
-	end
-
-	@host = /loveandmathematics.us/
-	get '/', :host_name => @host do
-		erb :loveandmath
-	end
-
-	@host = /lukasz.work/
-	get '/', :host_name => @host do
-		erb :index
 	end
 
 	run! if (app_file == $0)
