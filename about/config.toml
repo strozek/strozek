@@ -6,9 +6,6 @@ theme = "identity"
 # Disable unnecessary kinds
 disableKinds = ["page", "section", "taxonomy", "taxonomyTerm", "RSS", "sitemap", "robotsTXT", "404"]
 
-# Enter your tracking code to enable Google Analytics
-googleAnalytics = "UA-44628365-1"
-
 [params]
 
   # Images settings
