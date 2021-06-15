@@ -114,5 +114,9 @@ class Strozek < Sinatra::Base
 		erb :loveandmath
 	end
 
+  get '/mazeandgirl' do
+    erb :mazeandgirl
+  end
+
 	run! if (app_file == $0)
 end

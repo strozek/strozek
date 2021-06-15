@@ -1,0 +1,347 @@
+<html>
+
+<head>
+	<title>The Maze and the Girl</title>
+	<style>
+		body {
+			margin: 0;
+			background-color: #fafafa;
+		}
+		img {
+			position: fixed;
+		}
+		#background {
+			position: fixed;
+			width: 100%;
+			height: 100%;
+			background-image: url("/media/mazeandgirl/background.png");
+			background-repeat: repeat-x;
+			background-position: center;
+			opacity: 0.5;
+		}
+		#level {
+			font-size: 28px;
+			top: 10px;
+			left: 10px;
+		}
+	</style>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<script language="javascript">
+
+	// legend: # = wall, s = start, g = gate, k = key, 0-9 = monster
+
+	var LEVELS = [
+		[	"#######",
+	   		"#     #",
+			"#s k g#",
+			"#     #",
+			"#######"	],
+
+		[	"####### # ## #   ####      # ",
+			"# #   # # ## #####  ######## ",
+			" ## # # #            # #   # ",
+			"#   # # # #### #####         ",
+			"##### # #         ## ########",
+			"#     # # ##### #####        ",
+			"#  #### # #   # #            ",
+			"## #    # ## ## #0 ##########",
+			"##1###### #  #  #  #         ",
+			"g             # #  #        s",
+			"#### #### ## #  #  #         ",
+			"#  # #  # #   # k  ######### ",
+			"  ## #  # # ##  #          # ",
+			"     #  # #   # ############ ",
+			" ### ####    #         #     ",
+			" # # # ## #   # #####      # ",
+			"        # #  #  #    #####   ",
+			"# # # # # #   # #          # "		],
+
+		[	"        #s#             ",
+			"        # #             ",
+			"      # # #             ",
+			"    #  ## ##############",
+			"      # 0           1   ",
+			"    ################### ",
+			"    #              #    ",
+			"    # # # ######## k ###",
+			" ####k# #            #  ",
+			" #      #   ###### # #  ",
+			" ### ## #   #        #  ",
+			" # #  # #   # # ## # #  ",
+			" # #  # #   # # #  # #  ",
+			" # #  # ##### # ## # #  ",
+			" # #  #       # ##   #  ",
+			" #    #########  # # #  ",
+			" ###   ####       g  #  "		],
+
+		[	"    #    #s#      # # ##",
+			" ##   ## # ## ##  # # # ",
+			"  # # #  # #  ## ## # # ",
+			"### # #### ##### ## # ##",
+			"   0         k  k       ",
+			" ######## ############# ",
+			" #      # #   k        #",
+			" # #### # ############ #",
+			" # #  # #               ",
+			" ###### ######1### ## ##",
+			"                        ",
+			" ## ########## ###### ##",
+			"   g#                #  "		],
+
+		[	"         #s# #         # ",
+			"######## # # # ###### #  ",
+			"       # # # # #      #  ",
+			"######## # ### ###### ###",
+			"#   0   ## 1             ",
+			"# ##### ## ############# ",
+			"# #   #  # #   # #     # ",
+			"# # ###  # #   # # #   # ",
+			"# ######## ##### # ### # ",
+			"   2     3  k kkk# # # # ",
+			"### ##### ######## ### # ",
+			"### #   # #  #         # ",
+			"    #   # # ## ######### ",
+			" ####   #g#  # #         "		]
+	];
+
+	var current_level = 0;	// the current level
+	var intro = true;		// true if we are doing intro (initial story is shown)
+	var outro = false;		// true if we are doing outro (end story is shown)
+
+	// TODO: preload the image sizes somehow?
+	var grid = {map: null, cols: null, rows: null, left: null, top: null};
+	var screen = {width: window.innerWidth, height: window.innerHeight};
+	var wall = {img_width: 980, img_height: 1454, width: null, height: null};
+	var hero = {img_width: 732, img_height: 1235, width: null, height: null, x: null, y: null};
+	var gate = {img_width: 1200, img_height: 1600, width: null, height: null, x: null, y: null};
+	var keys = [];
+	var monsters = [];
+	var monster_templates = [ 	// we'll clone these for the monster entities
+		{img_width: 1002, img_height: 1664},
+		{img_width: 1600, img_height: 1600, frames: 2},
+		{img_width: 1243, img_height: 1889},
+		{img_width: 524, img_height: 1672},
+		];
+	var frame = 0; 		// animation frame for monsters which have more than one frame
+
+	// define the grid entity and wall width and height
+	function load_grid(i) {
+		grid.map = LEVELS[i];
+		grid.cols = grid.map[0].length;
+		grid.rows = grid.map.length;
+		var max_cell_width = parseInt((screen.width-40)/grid.cols);
+		var max_cell_height = parseInt((screen.height-40)/grid.rows);
+		wall.width = max_cell_width;
+
+		if(wall.width/wall.img_width*wall.img_height > max_cell_height) {
+			wall.width = parseInt(max_cell_height/wall.img_height*wall.img_width);
+		}
+		wall.height = parseInt(wall.width/wall.img_width*wall.img_height);
+		grid.left = parseInt(screen.width/2-grid.cols*wall.width/2);
+		grid.top = parseInt(screen.height/2-grid.rows*wall.height/2);
+	}
+
+	// define the entity and create a DOM element and place it on screen
+	function place(entity, id, img_src, ix, iy) {
+		entity.x = ix;
+		entity.y = iy;
+		entity.width = wall.width;
+		if(entity.width/entity.img_width*entity.img_height > wall.height) {
+			entity.width = parseInt(wall.height/entity.img_height*entity.img_width);
+		}
+		entity.height = parseInt(entity.width/entity.img_width*entity.img_height);
+		entity.id = id;
+		entity.img_src = img_src;
+		$('#entities').append('<img id="'+id+'" style="width:'+entity.width+'px;left:'+(entity.x*wall.width+grid.left+parseInt(wall.width/2-entity.width/2))+'px;top:'+(entity.y*wall.height+grid.top+parseInt(wall.height/2-entity.height/2))+'px" src="/media/mazeandgirl/'+img_src+'.png">');
+	}
+
+	// open the gate
+	function open_gate() {
+		$('#gate')[0].src = '/media/mazeandgirl/gate-1.png';
+	}
+
+	// move an entity, handling any collision
+	function move(entity, ix, iy) {
+
+		// check for collisions:
+
+		// boundaries, can't move
+		if(ix<0 || iy<0 || ix>=grid.cols || iy>=grid.rows) {
+			return;
+		}
+
+		// wall, can't move (hero or monster)
+		if(grid.map[iy][ix]=='#') { 	
+			return;
+		}
+
+		// key
+		var found_key = keys.find(key => key.x==ix && key.y==iy);
+		if(found_key!==undefined) { 		
+			if(entity==hero) {
+				$('#'+found_key.id).css('display', 'none');
+				keys = keys.filter(key => key!=found_key);
+				if(keys.length==0) {
+					open_gate();
+				}
+			}
+			else {
+				// not hero, so monster -> can't move
+				return;
+			}
+		}
+
+		// gate
+		if(gate.x==ix && gate.y==iy) {
+			if(entity==hero && keys.length==0) {
+				$('#background').css('display', 'none');
+				$('#entities').css('display', 'none');
+				$('#story_end').css('display', 'block');
+				outro = true;
+			} else {
+				return; // can't move past closed gate, or if you're a monster
+			}
+		}
+
+		// monster
+		var found_monster = monsters.find(monster => monster.x==ix && monster.y==iy);
+		if(found_monster!==undefined) {
+			if(entity==hero) {
+				on_document_ready();
+				return;
+			}
+			else {
+				// not hero, so monster -> can't move into another monster's space
+				return;
+			}
+		}
+
+		// hero, if you're a monster
+		if(entity!=hero && hero.x==ix && hero.y==iy) {
+			on_document_ready();
+			return;
+		}
+
+		// update the entity's coordinates and the location on screen
+		entity.x = ix;
+		entity.y = iy;
+		$('#'+entity.id).css('left', entity.x*wall.width+grid.left+parseInt(wall.width/2-entity.width/2));
+		$('#'+entity.id).css('top', entity.y*wall.height+grid.top+parseInt(wall.height/2-entity.height/2));
+	}
+
+	// animate the monsters - for those which have more than one frame
+	function animate_monsters() {
+		++frame;
+		for(var i in monsters) {
+			var monster = monsters[i];
+			if(monster.frames!==undefined) { 	// this monster has more than one frame
+				var f = frame%monster.frames;
+				$('#'+monster.id)[0].src = '/media/mazeandgirl/' + monster.img_src + (f>0 ? ('-'+f) : '') + '.png'; 	// update the image source to correspond to the specific frame
+			}
+			// move each monster
+			var draw = parseInt(Math.random()*4);
+			if(draw==0) {
+				move(monster, monster.x-1, monster.y);
+			}
+			else if(draw==1) {
+				move(monster, monster.x+1, monster.y);	
+			}
+			else if(draw==2) {
+				move(monster, monster.x, monster.y-1);
+			}
+			else if(draw==3) {
+				move(monster, monster.x, monster.y+1);
+			}
+		}
+	}
+
+	function on_document_ready() {
+		$('#entities').html('');
+		keys = [];
+		monsters = [];
+		load_grid(current_level);
+		$('#level').html("LEVEL "+current_level);
+		// go through each pixel in the grid and create the wall and all the sprites
+		$('#entities').append('<div style="position:fixed;width:'+(grid.cols*wall.width+6)+'px;height:'+(grid.rows*wall.height+6)+'px;left:'+(grid.left-3)+'px;top:'+(grid.top-3)+'px;border:2px solid #bbbbbb"></div>');
+		for(var ix=0; ix<grid.cols; ++ix) {
+			for(var iy=0; iy<grid.rows; ++iy) {
+				pixel = grid.map[iy][ix];
+				if(pixel=='#') {
+					$('#entities').append('<img style="width:'+wall.width+'px;left:' + (ix*wall.width+grid.left) + 'px;top:'+ (iy*wall.height+grid.top) + 'px" src="/media/mazeandgirl/wall.png">');
+				}
+				if(pixel=='s') {
+					place(hero, 'hero', 'hero', ix, iy);
+				}
+				if(pixel=='k') {
+					var key = {img_width: 310, img_height: 654};
+					var i = keys.length;
+					place(key, 'key'+i, 'key', ix, iy);
+					keys.push(key);
+				}
+				if(pixel=='g') {
+					place(gate, 'gate', 'gate-0', ix, iy);
+				}
+				if(pixel>='0' && pixel<='9') {
+					var monster = {...monster_templates[parseInt(pixel)]};
+					var i = monsters.length;
+					place(monster, 'monster'+i, 'monster-'+parseInt(pixel), ix, iy);
+					monsters.push(monster);
+				}
+			}
+		}
+	}
+
+	$(document).ready(on_document_ready);
+
+	setInterval(animate_monsters, 600);
+
+	window.onclick = function(event) {
+		if(intro) {
+			intro = false;
+			$('#story_start').css('display', 'none');
+			$('#background').css('display', 'block');
+			$('#entities').css('display', 'block');
+			return;
+		}
+		if(outro && current_level+1<LEVELS.length) {
+			outro = false;
+			$('#story_end').css('display', 'none');
+			$('#background').css('display', 'block');
+			$('#entities').css('display', 'block');
+			++current_level;
+			on_document_ready();
+		}
+		var clicked = {x: parseInt((event.x-grid.left)/wall.width), y: parseInt((event.y-grid.top)/wall.height)}; 	// the imputed coordinate on the grid that was clicked
+		if(clicked.x==hero.x && clicked.y==hero.y-1) {
+			move(hero, hero.x, hero.y-1);
+		}
+		else if(clicked.x==hero.x && clicked.y==hero.y+1) {
+			move(hero, hero.x, hero.y+1);
+		}
+		else if(clicked.x==hero.x-1 && clicked.y==hero.y) {
+			move(hero, hero.x-1, hero.y);
+		}
+		else if(clicked.x==hero.x+1 && clicked.y==hero.y) {
+			move(hero, hero.x+1, hero.y);
+		}
+	}	
+</script>
+
+<body>
+	<div id="background" style="display:none">
+		<div id="level" style="position:fixed">
+		</div>
+	</div>
+	<div id="entities" style="display:none">
+	</div>
+	<div id="story_start">
+		<img src="/media/mazeandgirl/story-start.png" height="100%">
+	</div>
+	<div id="story_end" style="display:none">
+		<img src="/media/mazeandgirl/story-end.png" height="100%">
+	</div>
+</body>
+
+</html>
