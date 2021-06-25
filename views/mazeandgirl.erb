@@ -2,136 +2,403 @@
 
 <head>
 	<title>The Maze and the Girl</title>
+	<link rel='shortcut icon' type='image/ico' href='/images/mazeandgirl/favicon.png' />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="mobile-web-app-capable" content="yes">
+
 	<style>
 		body {
 			margin: 0;
 			background-color: #fafafa;
 		}
+
 		img {
 			position: fixed;
 		}
+
+		button {
+			font-size: 140%;
+			border: 1px solid #000000;
+			background-color: #ddeeff;
+			margin: 4px;
+			padding: 8px;
+		}
+
+		.hidden {
+			display: none;
+		}
+
+		.fullscreen {
+			position: fixed;
+			width: 100%;
+			height: 100%;
+			left: 0;
+			top: 0;
+		}
+
+		.fixed {
+			position: fixed;
+		}
+
+		.arrow_button {
+			width: 60px;
+			height: 60px;
+		}
+
 		#background {
 			position: fixed;
 			width: 100%;
 			height: 100%;
-			background-image: url("/media/mazeandgirl/background.png");
+			background-image: url("/images/mazeandgirl/background.png");
 			background-repeat: repeat-x;
 			background-position: center;
 			opacity: 0.5;
 		}
+
+		#level {
+			position: fixed;
+		}
+
+		#red {
+ 			position: fixed;
+ 			width: 100%;
+ 			height: 100%;
+ 			background-color: #aa0000;
+		}
+
 		#level {
 			font-size: 28px;
 			top: 10px;
 			left: 10px;
 		}
+
+		#bottom_bar {
+			position: fixed;
+			left: 0;
+			bottom: 0;
+		}
+
+		#right_bar {
+			position: fixed;
+			right: 0;
+			top: 40%;
+		}
 	</style>
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="/js/mazeandgirl/confetti.js" language="javascript"></script>
 </head>
 
 <script language="javascript">
 
-	// legend: # = wall, s = start, g = gate, k = key, 0-9 = monster
+	// legend: # = wall, s = start, g = gate, k = key, x = stop sign, p = portal, 0-9 = monster
+	// portals: i-th element in the array specifies where the i-th portal takes the hero to. portals are ordered from 0 and by going through the grid down rows, then across columns
+	// yes, the codes are right here in plain sight, unobfuscated. any kid who figures it out deserves to get the codes :)
 
 	var LEVELS = [
-		[	"#######",
-	   		"#     #",
-			"#s k g#",
-			"#     #",
-			"#######"	],
 
-		[	"####### # ## #   ####      # ",
-			"# #   # # ## #####  ######## ",
-			" ## # # #            # #   # ",
-			"#   # # # #### #####         ",
-			"##### # #         ## ########",
-			"#     # # ##### #####        ",
-			"#  #### # #   # #            ",
-			"## #    # ## ## #0 ##########",
-			"##1###### #  #  #  #         ",
-			"g             # #  #        s",
-			"#### #### ## #  #  #         ",
-			"#  # #  # #   # k  ######### ",
-			"  ## #  # # ##  #          # ",
-			"     #  # #   # ############ ",
-			" ### ####    #         #     ",
-			" # # # ## #   # #####      # ",
-			"        # #  #  #    #####   ",
-			"# # # # # #   # #          # "		],
+		{code:"0000", // 0
+		 grid:[	"#s#",
+		 		"# #",
+		 		"# #",
+		 		"# #",
+		 		"# #",
+		 		"# #",
+		 		"#g#"	]},
 
-		[	"        #s#             ",
-			"        # #             ",
-			"      # # #             ",
-			"    #  ## ##############",
-			"      # 0           1   ",
-			"    ################### ",
-			"    #              #    ",
-			"    # # # ######## k ###",
-			" ####k# #            #  ",
-			" #      #   ###### # #  ",
-			" ### ## #   #        #  ",
-			" # #  # #   # # ## # #  ",
-			" # #  # #   # # #  # #  ",
-			" # #  # ##### # ## # #  ",
-			" # #  #       # ##   #  ",
-			" #    #########  # # #  ",
-			" ###   ####       g  #  "		],
+		{code:"1234", // 1
+		 grid:[	"     #k# #s#  2 2 #kk##",
+		 		"     #k# #k#     ##k## ",
+		 		"     #k###k########k#  ",
+		 		"     #k# #k#      #k#  ",
+		 		"     #k# #k#      #k#  ",
+		 		"     #k# #k#      #k#  ",
+		 		"     #kkkkk#      #k#  ",
+		 		"     #k#####      # #  ",
+		 		"     #k#          # #  ",
+		 		"     #k#          # #  ",
+		 		"######k############ #  ",
+		 		"g     kk            #  ",
+		 		"######k##############  ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k##              ",
+		 		"     #kk#              ",
+		 		"     #k##              ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k#               ",
+		 		"     #k################",
+		 		"     #kkkkkkkkkkkkkkkkk",
+		 		"     ##################"	]},
 
-		[	"    #    #s#      # # ##",
-			" ##   ## # ## ##  # # # ",
-			"  # # #  # #  ## ## # # ",
-			"### # #### ##### ## # ##",
-			"   0         k  k       ",
-			" ######## ############# ",
-			" #      # #   k        #",
-			" # #### # ############ #",
-			" # #  # #               ",
-			" ###### ######1### ## ##",
-			"                        ",
-			" ## ########## ###### ##",
-			"   g#                #  "		],
+		{code:"4605", // 2
+		 grid:[	"####### # ## #   ####      # ",
+				"# #   # # ## #####  ######## ",
+				" ## # # #            # #   # ",
+				"#   # # # #### #####         ",
+				"##### # #         ## ########",
+				"#     # # ##### #####        ",
+				"#  #### # #   # #            ",
+				"## #    # ## ## #0 ##########",
+				"##1###### #  #  #  #         ",
+				"g             # #  #        s",
+				"#### #### ## #  #  #         ",
+				"#  # #  # #   # k  ######### ",
+				"  ## #  # # ##  #          # ",
+				"     #  # #   # ############ ",
+				" ### ####    #         #     ",
+				" # # # ## #   # #####      # ",
+				"        # #  #  #    #####   ",
+				"# # # # # #   # #          # " ]},
 
-		[	"         #s# #         # ",
-			"######## # # # ###### #  ",
-			"       # # # # #      #  ",
-			"######## # ### ###### ###",
-			"#   0   ## 1             ",
-			"# ##### ## ############# ",
-			"# #   #  # #   # #     # ",
-			"# # ###  # #   # # #   # ",
-			"# ######## ##### # ### # ",
-			"   2     3  k kkk# # # # ",
-			"### ##### ######## ### # ",
-			"### #   # #  #         # ",
-			"    #   # # ## ######### ",
-			" ####   #g#  # #         "		]
+		{code:"1031", // 3
+		 grid:[	"        #s#             ",
+				"        # #             ",
+				"      # # #             ",
+				"    #  ## ##############",
+				"      # 0               ",
+				"    ################### ",
+				"    #              #    ",
+				"    # # # ######## k ###",
+				" ####k# #            #  ",
+				" #      #   ###### # #  ",
+				" ### ## #   #        #  ",
+				" # #  # #   # # ## # #  ",
+				" # #  # #   # # #  # #  ",
+				" # #  # ##### # ## # #  ",
+				" # #  #       # ##   #  ",
+				" #    #########  # # #  ",
+				" ### 1 ####       g  #  " ]},
+
+		{code:"0302", // 4
+		 grid:[	"    #    #s#      # # ##",
+				" ##   ## # ## ##  # # # ",
+				"  # # #  # #  ## ## # # ",
+				"### # #### ##### ## # ##",
+				"   0         k  k       ",
+				" ######## ############# ",
+				" #      # #   k        #",
+				" # #### # ############ #",
+				" # #  # #               ",
+				" ###### ######1### ## ##",
+				"                        ",
+				" ## ########## ###### ##",
+				"   g#                #  " ]},
+
+		{code:"9987", // 5
+		 grid:[	"         #s# #         # ",
+				"######## # # # ###### #  ",
+				"       # # # # #      #  ",
+				"######## # ### ###### ###",
+				"#   0   ## 1             ",
+				"# ##### ## ############# ",
+				"# #   #  # #   # #     # ",
+				"# # ###  # #   # # #   # ",
+				"# ######## ##### # ### # ",
+				"   2     3  k kkk# # # # ",
+				"### ##### ######## ### # ",
+				"### #   # #  #         # ",
+				"    #   # # ## ######### ",
+				" ####   #g#  # #         "	]},
+
+		{code:"5505", // 6
+		 grid:[	" #### #s#      #####",
+				" #  # # # #### ## # ",
+				" # ## # # #  # ## # ",
+				"3# #### ###### # # #",
+				"           3## ## # ",
+				"# ### # # #    kk   ",
+				"# # # # # ### ######",
+				"# # # # # #         ",
+				"#   # # # ##########",
+				"#kkkkk# #       k   ",
+				"# ##### ########### ",
+				"# #   # #3    #  ## ",
+				"# #   # #  3  #k ##k",
+				"# #   # ####### ### ",
+				"# #   #             ",
+				"# #   # # k         ",
+				"# #   # ######### ##",
+				"# #   # #           ",
+				"# #   # #           ",
+				"# #   # #           ",
+				"# #   # ############",
+				"# #####   g         " ]},
+
+		{code:"4099", // 7
+		 grid:[	"s# #     #     #  #  #          ",
+				" #  #  # #  ##   ##    ##### # #",
+				" # ##  ###  #  ##   #  #  3  # #",
+				"   #  #    #   #    # #   #  #  ",
+				"##   #  ###  ###  #  #####   #  ",
+				"#   ###  #    #  3 #  ##  # #   ",
+				"##   #   #  #   #   ###   #   # ",
+				" #   ###  # ###   #  # # # #  # ",
+				"#  #  #   #  #   #    #  # # #  ",
+				"####  3 ###  #####  ##  ###  #  ",
+				"   #   # k#  #   #  #   #k#  #  ",
+				" #   ###  ## #  ##  ### # #  #  ",
+				" #  # #  #33   ##    ###      # ",
+				"#   ##  ## 3   ##  #  #  ### #  ",
+				"##      ##     ##  #  #  #   #  ",
+				"#   #    #    k##k ##  ##k # # g" ]},
+
+		{code:"1112", // 8
+		 grid:[	"                 ###### ",
+				"                 #.   # ",
+				"################## ## # ",
+				"################3# ## # ",
+				"kkkkkkkkkkkk.       # # ",
+				"k#################. # ##",
+				"k################## #. k",
+				"k####.      k###### ####",
+				"k#### ###### # k. k.   s",
+				"k.         # # ####### #",
+				"k######### # # #.  k # #",
+				"k#.      # #x# #### ## #",
+				"k#1 1 1. # # #kk.   k# #",
+				" #. 1.   # # #########x#",
+				"x#.   1. # #.     k.   #",
+				" ################ ######",
+				"g             kk   #####" ]},
+
+		{code:"0001", // 9
+		 grid:[ "s    #3         #3       #     ",
+				"     #     #    #    #   #   # ",
+				"     #     #    #    #   #   # ",
+				"#### ##### #### #### ### ### # ",
+				"     #     #    #    #   #   # ",
+				"     #     #    #    #   #   # ",
+				"    3#     #3   #    #3  #   # ",
+				" ##### ##### #### #### ### ### ",
+				"     #    3#    #   3#   #  3# ",
+				"     #     #    #    #   #   # ",
+				"     #     #    #    #   #   # ",
+				"#### ##### #### #### ### ### # ",
+				"     #     #    #    #   #   # ",
+				"     #     #    #    #   #   # ",
+				"3          #3        #3      #g" ]},
+
+		{code:"0101", // 10
+		 grid:[ " # p    #                            ###",
+		 		" ###### #                            #pg",
+		 		" # #  # #         #################  # #",
+		 		" # #  # #         #k              #  # #",
+		 		" # #  # #     ##### p ########### #  # #",
+		 		" # #  # #     #    ####   #     # #  #x#",
+		 		" ###  # #     # #######   #     ###  # #",
+		 		" #p#  # #     # #         #     # #  # #",
+		 		"## #### ####### #         #     #p#  #p#",
+		 		"      # # #######  3 3    ############ #",
+		 		"      # #      p                 #      ",
+		 		"      # #  ####### 3 3       ####p######",
+		 		" ######### ####           ####  # #     ",
+		 		"s#    #p## #  #           #     # #     ",
+		 		" #    # ## #  #           #     # #     ",
+		 		" #    # ## #  #           #     # #     ",
+		 		" #    # ## #  ####### #####     # #     ",
+		 		" #    # ## #        # #         # #     ",
+		 		" #    # ## #        # #         # #     ",
+		 		" ####################k#         # #     ",
+		 		" p        p         #p########### #     ",
+		 		"##################### # p         #     "	],
+		 portals:[7, 2, 3, 0, 9, 5, 5, 8, 10, 6, 12, 12, 11]}
+
 	];
 
 	var current_level = 0;		// the current level
 	var intro = true;			// true if we are doing intro (initial story is shown)
-	var outro = false;			// true if we are doing outro (end story is shown)
-	var frame = 0; 		// animation frame for monsters which have more than one frame
+	var outro = false;			// true if we are doing outro (after each level and at the end)
+	var frame = 0; 				// animation frame for monsters which have more than one frame
+	var disable = 0;			// if nonzero, hero is disabled
+	var disable_stop_id = null;	// the ID of the stop element that disabled the hero
 
-	// TODO: preload the image sizes somehow?
+	// TODO: preload the image sizes so they don't have to be hard-coded
 	var grid = {map: null, cols: null, rows: null, left: null, top: null};
-	var screen = {width: window.innerWidth, height: window.innerHeight};
+	var screen = {width: null, height: null};
 	var wall = {img_width: 980, img_height: 1454, width: null, height: null};
 	var hero = {img_width: 732, img_height: 1235, width: null, height: null, x: null, y: null};
 	var gate = {img_width: 1200, img_height: 1600, width: null, height: null, x: null, y: null};
 	var keys = [];
+	var stops = [];
+	var portals = [];
 	var monsters = [];
-	var monster_templates = [ 	// we'll clone these for the monster entities
+	var monster_templates = [ 	// we'll be cloning these for the monster entities
 		{img_width: 1002, img_height: 1664},
 		{img_width: 1600, img_height: 1600, frames: 2},
 		{img_width: 1243, img_height: 1889},
 		{img_width: 524, img_height: 1672},
 		];
 
+	// detect a swipe. calls out to the callback provided
+	// credit: http://www.javascriptkit.com/javatutors/touchevents2.shtml
+	function swipedetect(el, callback) {
+	    var touchsurface = el,
+	    swipedir,
+	    startX,
+	    startY,
+	    distX,
+	    distY,
+	    threshold = 50, //required min distance traveled to be considered swipe
+	    restraint = 40, // maximum distance allowed at the same time in perpendicular direction
+	    allowedTime = 400, // maximum time allowed to travel that distance
+	    elapsedTime,
+	    startTime,
+	    handleswipe = callback || function(swipedir){}
+	  
+	    touchsurface.addEventListener('touchstart', function(e){
+	        var touchobj = e.changedTouches[0]
+	        swipedir = 'none'
+	        dist = 0
+	        startX = touchobj.pageX
+	        startY = touchobj.pageY
+	        startTime = new Date().getTime() // record time when finger first makes contact with surface
+	        e.preventDefault()
+	    }, false)
+	  
+	    touchsurface.addEventListener('touchmove', function(e){
+	        e.preventDefault() // prevent scrolling when inside DIV
+	    }, false)
+	  
+	    touchsurface.addEventListener('touchend', function(e){
+	        var touchobj = e.changedTouches[0]
+	        distX = touchobj.pageX - startX // get horizontal dist traveled by finger while in contact with surface
+	        distY = touchobj.pageY - startY // get vertical dist traveled by finger while in contact with surface
+	        elapsedTime = new Date().getTime() - startTime // get time elapsed
+	        if (elapsedTime <= allowedTime){ // first condition for awipe met
+	            if (Math.abs(distX) >= threshold && Math.abs(distY) <= restraint){ // 2nd condition for horizontal swipe met
+	                swipedir = (distX < 0)? 'left' : 'right' // if dist traveled is negative, it indicates left swipe
+	            }
+	            else if (Math.abs(distY) >= threshold && Math.abs(distX) <= restraint){ // 2nd condition for vertical swipe met
+	                swipedir = (distY < 0)? 'up' : 'down' // if dist traveled is negative, it indicates up swipe
+	            }
+	        }
+	        handleswipe(swipedir)
+	        e.preventDefault()
+	    }, false)
+	}
+  
 	// define the grid entity and wall width and height
 	function load_grid(i) {
-		grid.map = LEVELS[i];
+		grid.map = LEVELS[i].grid;
+		grid.portals = LEVELS[i].portals;
 		grid.cols = grid.map[0].length;
 		grid.rows = grid.map.length;
-		var max_cell_width = parseInt((screen.width-40)/grid.cols);
+		var max_cell_width = parseInt((screen.width-200)/grid.cols);
 		var max_cell_height = parseInt((screen.height-40)/grid.rows);
 		wall.width = max_cell_width;
 
@@ -154,16 +421,35 @@
 		entity.height = parseInt(entity.width/entity.img_width*entity.img_height);
 		entity.id = id;
 		entity.img_src = img_src;
-		$('#entities').append('<img id="'+id+'" style="width:'+entity.width+'px;left:'+(entity.x*wall.width+grid.left+parseInt(wall.width/2-entity.width/2))+'px;top:'+(entity.y*wall.height+grid.top+parseInt(wall.height/2-entity.height/2))+'px" src="/media/mazeandgirl/'+img_src+'.png">');
+		$('#entities').append('<img id="'+id+'" style="width:'+entity.width+'px;left:'+(entity.x*wall.width+grid.left+parseInt(wall.width/2-entity.width/2))+'px;top:'+(entity.y*wall.height+grid.top+parseInt(wall.height/2-entity.height/2))+'px" src="/images/mazeandgirl/'+img_src+'.png">');
+	}
+
+	// place a title screen in the center of the screen, appropriately scaled
+	function title(id, dimensions) {
+		var x = Math.min(screen.width-40, dimensions.width);
+		var y = x/dimensions.width*dimensions.height;
+		if(y>screen.height) {
+			y = Math.min(screen.height-40, dimensions.height);
+			x = y/dimensions.height*dimensions.width;
+		}
+		$('#'+id).css('width', parseInt(x));
+		$('#'+id).css('height', parseInt(y));
+		$('#'+id).css('left', parseInt(screen.width/2-x/2));
+		$('#'+id).css('top', parseInt(screen.height/2-y/2));
 	}
 
 	// open the gate
 	function open_gate() {
-		$('#gate')[0].src = '/media/mazeandgirl/gate-1.png';
+		$('#gate')[0].src = '/images/mazeandgirl/gate-1.png';
 	}
 
 	// move an entity, handling any collision
 	function move(entity, ix, iy) {
+
+		if(entity==hero && disable>0) {
+			// hero disabled
+			return;
+		}
 
 		// check for collisions:
 
@@ -181,7 +467,7 @@
 		var found_key = keys.find(key => key.x==ix && key.y==iy);
 		if(found_key!==undefined) { 		
 			if(entity==hero) {
-				$('#'+found_key.id).css('display', 'none');
+				$('#'+found_key.id).addClass('hidden');
 				keys = keys.filter(key => key!=found_key);
 				if(keys.length==0) {
 					open_gate();
@@ -193,12 +479,44 @@
 			}
 		}
 
+		// stop
+		var found_stop = stops.find(stop => stop.x==ix && stop.y==iy);
+		if(found_stop!==undefined) {
+			if(entity==hero) {
+				disable = 50;
+				disable_stop_id = found_stop.id;
+				// don't return
+			}
+			// not hero, so monster -> do nothing
+		}
+
+		// portal
+		var found_portal = portals.find(portal => portal.x==ix && portal.y==iy);
+		if(found_portal!==undefined) {
+			if(entity==hero) {
+				target_portal = grid.portals[found_portal.i];
+				ix = portals[target_portal].x;
+				iy = portals[target_portal].y;
+			}
+			else {
+				// monster -> disappear
+				$('#monster'+entity.i).addClass('hidden');
+				monsters = monsters.filter(monster => monster!=entity);
+			}
+		}
+
 		// gate
 		if(gate.x==ix && gate.y==iy) {
 			if(entity==hero && keys.length==0) {
-				$('#background').css('display', 'none');
-				$('#entities').css('display', 'none');
-				$('#story_end').css('display', 'block');
+				$('#background').addClass('hidden');
+				$('#entities').addClass('hidden');
+				if(current_level==LEVELS.length-1) {
+					$('#story_end').removeClass('hidden');
+					$(confetti);
+				}
+				else {
+					$('#story_nextlevel').removeClass('hidden');
+				}
 				outro = true;
 			} else {
 				return; // can't move past closed gate, or if you're a monster
@@ -209,7 +527,7 @@
 		var found_monster = monsters.find(monster => monster.x==ix && monster.y==iy);
 		if(found_monster!==undefined) {
 			if(entity==hero) {
-				on_document_ready();
+				respawn();
 				return;
 			}
 			else {
@@ -220,7 +538,7 @@
 
 		// hero, if you're a monster
 		if(entity!=hero && hero.x==ix && hero.y==iy) {
-			on_document_ready();
+			respawn();
 			return;
 		}
 
@@ -231,46 +549,66 @@
 		$('#'+entity.id).css('top', entity.y*wall.height+grid.top+parseInt(wall.height/2-entity.height/2));
 	}
 
-	// animate the monsters - for those which have more than one frame
-	function animate_monsters() {
+	// the hero is eaten by monter and the level restarts
+	function respawn() {
+		$('#red').removeClass('hidden');
+		setTimeout(function(){
+			$('#red').addClass('hidden');
+		}, 300);
+		play_level();
+	}
+
+	// handle animations: the monsters, for those which have more than one frame, and the stop sign flashing
+	function animate() {
 		++frame;
 		for(var i in monsters) {
 			var monster = monsters[i];
-			if(monster.frames!==undefined) { 	// this monster has more than one frame
-				var f = frame%monster.frames;
-				$('#'+monster.id)[0].src = '/media/mazeandgirl/' + monster.img_src + (f>0 ? ('-'+f) : '') + '.png'; 	// update the image source to correspond to the specific frame
+			if(monster!==undefined) { 	// in case the monster has disappeared in the portal
+				if(monster.frames!==undefined) { 	// this monster has more than one frame
+					var f = frame%monster.frames;
+					$('#'+monster.id)[0].src = '/images/mazeandgirl/' + monster.img_src + (f>0 ? ('-'+f) : '') + '.png'; 	// update the image source to correspond to the specific frame
+				}
+				// move each monster
+				var draw = parseInt(Math.random()*4);
+				if(draw==0) {
+					move(monster, monster.x-1, monster.y);
+				}
+				else if(draw==1) {
+					move(monster, monster.x+1, monster.y);	
+				}
+				else if(draw==2) {
+					move(monster, monster.x, monster.y-1);
+				}
+				else if(draw==3) {
+					move(monster, monster.x, monster.y+1);
+				}
 			}
-			// move each monster
-			var draw = parseInt(Math.random()*4);
-			if(draw==0) {
-				move(monster, monster.x-1, monster.y);
+		}
+		if(disable>0) {
+			if(disable%2==0) {
+				$('#'+disable_stop_id).removeClass('hidden');
+			} else {
+				$('#'+disable_stop_id).addClass('hidden');
 			}
-			else if(draw==1) {
-				move(monster, monster.x+1, monster.y);	
-			}
-			else if(draw==2) {
-				move(monster, monster.x, monster.y-1);
-			}
-			else if(draw==3) {
-				move(monster, monster.x, monster.y+1);
-			}
+			--disable;
 		}
 	}
 
-	function on_document_ready() {
-
+	// build (or re-build) the level, set up keys, monsters, stop signs etc.
+	function play_level() {
 		$('#entities').html('');
 		keys = [];
+		stops = [];
 		monsters = [];
 		load_grid(current_level);
-		$('#level').html("LEVEL "+current_level);
+		$('#level').html("LEVEL "+current_level+"<br>CODE: "+LEVELS[current_level].code);
 		// go through each pixel in the grid and create the wall and all the sprites
 		$('#entities').append('<div style="position:fixed;width:'+(grid.cols*wall.width+6)+'px;height:'+(grid.rows*wall.height+6)+'px;left:'+(grid.left-3)+'px;top:'+(grid.top-3)+'px;border:2px solid #bbbbbb"></div>');
 		for(var ix=0; ix<grid.cols; ++ix) {
 			for(var iy=0; iy<grid.rows; ++iy) {
 				pixel = grid.map[iy][ix];
 				if(pixel=='#') {
-					$('#entities').append('<img style="width:'+wall.width+'px;left:' + (ix*wall.width+grid.left) + 'px;top:'+ (iy*wall.height+grid.top) + 'px" src="/media/mazeandgirl/wall.png">');
+					$('#entities').append('<img style="width:'+wall.width+'px;left:' + (ix*wall.width+grid.left) + 'px;top:'+ (iy*wall.height+grid.top) + 'px" src="/images/mazeandgirl/wall.png">');
 				}
 				if(pixel=='s') {
 					place(hero, 'hero', 'hero', ix, iy);
@@ -281,68 +619,128 @@
 					place(key, 'key'+i, 'key', ix, iy);
 					keys.push(key);
 				}
+				if(pixel=='x') {
+					var stop = {img_width: 568, img_height: 507};
+					var i = stops.length;
+					place(stop, 'stop'+i, 'stop', ix, iy);
+					stops.push(stop);
+				}
 				if(pixel=='g') {
 					place(gate, 'gate', 'gate-0', ix, iy);
 				}
+				if(pixel=='p') {
+					var i = portals.length;
+					var portal = {img_width: 814, img_height: 1434, i: i};
+					place(portal, 'portal'+i, 'portal', ix, iy);
+					portals.push(portal);
+				}
 				if(pixel>='0' && pixel<='9') {
-					var monster = {...monster_templates[parseInt(pixel)]};
 					var i = monsters.length;
+					var monster = {...monster_templates[parseInt(pixel)]};
+					monster.i = i;
 					place(monster, 'monster'+i, 'monster-'+parseInt(pixel), ix, iy);
 					monsters.push(monster);
 				}
 			}
 		}
+		if(keys.length==0) {
+			open_gate();
+		}
+	}
+
+	// set the current level to 0 and rebuild the level
+	function reset() {
+		current_level = 0;
+		play_level();
+	}
+
+	// prompt the user for a code, and if appropriate code is provided, play a relevant level
+	function enter_code() {
+		var code = prompt("Enter the code");
+		var level = LEVELS.findIndex(level => level.code==code);
+		if(level!=-1) {
+			current_level = level;
+			play_level();
+		}
+	}
+
+	// setup after document is ready: set up swipe handler, screen size, and title images. and play the level
+	function on_document_ready() {
+		swipedetect(document.getElementById('universe'), function(swipedir){
+			if(intro) {
+				intro = false;
+				$('#story_start').addClass('hidden');
+				$('#background').removeClass('hidden');
+				$('#entities').removeClass('hidden');
+				return;
+			}
+			if(outro && current_level+1<LEVELS.length) {
+				outro = false;
+				$('#story_nextlevel').addClass('hidden');
+				$('#background').removeClass('hidden');
+				$('#entities').removeClass('hidden');
+				++current_level;
+				play_level();
+			}				
+			if(swipedir=="left") {
+				move(hero, hero.x-1, hero.y);
+			}
+			else if(swipedir=="right") {
+				move(hero, hero.x+1, hero.y);
+			}
+			else if(swipedir=="up") {
+				move(hero, hero.x, hero.y-1);
+			}
+			else if(swipedir=="down") {
+				move(hero, hero.x, hero.y+1);
+			}
+		});
+
+		screen.width = $(window).width();
+		screen.height = $(window).height();
+
+		title('story_start_img', {width: 1662, height: 980});
+		title('story_nextlevel_img', {width: 1304, height: 650});
+		title('story_end_img', {width: 1304, height: 1300});
+
+		play_level();
 	}
 
 	$(document).ready(on_document_ready);
-
-	setInterval(animate_monsters, 600);
-
-	window.onclick = function(event) {
-		if(intro) {
-			intro = false;
-			$('#story_start').css('display', 'none');
-			$('#background').css('display', 'block');
-			$('#entities').css('display', 'block');
-			return;
-		}
-		if(outro && current_level+1<LEVELS.length) {
-			outro = false;
-			$('#story_end').css('display', 'none');
-			$('#background').css('display', 'block');
-			$('#entities').css('display', 'block');
-			++current_level;
-			on_document_ready();
-		}
-		var clicked = {x: parseInt((event.x-grid.left)/wall.width), y: parseInt((event.y-grid.top)/wall.height)}; 	// the imputed coordinate on the grid that was clicked
-		if(clicked.x==hero.x && (clicked.y==hero.y-1 || clicked.y==hero.y-2)) {
-			move(hero, hero.x, hero.y-1);
-		}
-		else if(clicked.x==hero.x && (clicked.y==hero.y+1 || clicked.y==hero.y+2)) {
-			move(hero, hero.x, hero.y+1);
-		}
-		else if((clicked.x==hero.x-1 || clicked.x==hero.x-2) && clicked.y==hero.y) {
-			move(hero, hero.x-1, hero.y);
-		}
-		else if((clicked.x==hero.x+1 || clicked.x==hero.x+2) && clicked.y==hero.y) {
-			move(hero, hero.x+1, hero.y);
-		}
-	}	
+	setInterval(animate, 600);
 
 </script>
 
 <body>
-	<div id="background" style="display:none">
-		<div id="level" style="position:fixed">
+	<div id="universe" class="fullscreen">
+		<div id="background" class="hidden">
+			<div id="level">
+			</div>
+		</div>
+		<div id="red" class="hidden">
+		</div>
+		<div id="entities" class="hidden">
+		</div>
+		<div id="story_start" class="fullscreen">
+			<img id="story_start_img" src="/images/mazeandgirl/story-start.png" class="fixed">
+		</div>
+		<div id="story_nextlevel" class="hidden fullscreen">
+			<img id="story_nextlevel_img" src="/images/mazeandgirl/story-nextlevel.png" class="fixed">
+		</div>
+		<div id="story_end" class="hidden fullscreen">
+			<img id="story_end_img" src="/images/mazeandgirl/story-end.png" class="fixed">
 		</div>
 	</div>
-	<div id="entities" style="display:none">
+	<div id="bottom_bar">
+		<button onclick="reset()">reset</button> &nbsp; &nbsp; 
+		<button onclick="enter_code()">codes</button>
 	</div>
-	<div id="story_start">
-		<img src="/media/mazeandgirl/story-start.png" height="100%">
-	</div>
-	<div id="story_end" style="display:none">
-		<img src="/media/mazeandgirl/story-end.png" height="100%">
+	<div id="right_bar">
+		<table>
+			<tr><td></td><td><button class="arrow_button" onclick="move(hero, hero.x, hero.y-1)">&uarr;</button></td><td></td></tr>
+			<tr><td><button class="arrow_button" onclick="move(hero, hero.x-1, hero.y)">&larr;</button></td><td></td><td><button class="arrow_button" onclick="move(hero, hero.x+1, hero.y)">&rarr;</button></td></tr>
+			<tr><td></td><td><button class="arrow_button" onclick="move(hero, hero.x, hero.y+1)">&darr;</button></td><td></td></tr>
+		</table>
 	</div>
 </body>
 
