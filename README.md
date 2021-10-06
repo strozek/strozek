@@ -18,6 +18,7 @@ A collection of personal utilities, demos, and showcases
 ** `/wordgame/commands/list`
 ** POST `/wordgame/commands`
 * `/loveandmath` or `https://loveandmathematics.us`: our wedding website
+* `/panda` or `https://pandaprotection.info`: the panda protection website made by my daughter
 * `/crowdsource`: the crowdsourcing project (see https://www.elevenseconds.com/tvd/crowdsourced-art), written in 2009
 ** `/crowdsource/makeMeAToken/:salt/:amount`: creae a token, given the secret salt, and the number of pixels
 ** `/crowdsource/listMeTheTokens/:salt`: list all tokens in the system
