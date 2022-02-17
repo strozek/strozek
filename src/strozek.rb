@@ -127,5 +127,9 @@ class Strozek < Sinatra::Base
     erb :mazeandgirl
   end
 
+  get '/logo' do
+    erb :logo
+  end
+
 	run! if (app_file == $0)
 end
