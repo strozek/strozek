@@ -23,6 +23,7 @@ A collection of personal utilities, demos, and showcases
 ** `/crowdsource/makeMeAToken/:salt/:amount`: creae a token, given the secret salt, and the number of pixels
 ** `/crowdsource/listMeTheTokens/:salt`: list all tokens in the system
 * `/mazeandgirl`: a maze game designed by my daughter
+* `/logo`: a simple LOGO interpreter
 * `/static_sites/A-Level-Allocator/enter.html`: An exploration tool for British Mathematics A-Levels (see https://www.elevenseconds.com/archive/early-websites-2001), built in 2001
 * `/static_sites/German-Grammar-Test/index.html`: A simple german grammar test (see https://www.elevenseconds.com/archive/early-websites-2001), built in 2001
 * `/static_sites/js-objects.html`: A demo of jquery UI-like objects I built in 2005 (see https://www.elevenseconds.com/archive/javascript-objects-2005)
