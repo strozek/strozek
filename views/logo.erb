@@ -15,6 +15,21 @@ c                       - clear the canvas
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body style="margin-top:40px;">
+<div style="position:absolute;left:50px;top:50px;font-family:monospace;">
+	<table border="0" style="font-size:18px;">
+		<tr><td><b>Cheatsheet</b></td></tr>
+		<tr><td>go <span style="color:#1e63b6;">30</span></td></tr>
+		<tr><td>back <span style="color:#1e63b6;">30</span></td></tr>
+		<tr><td>lt <span style="color:#1e63b6;">90</span></td></tr>
+		<tr><td>rt <span style="color:#1e63b6;">90</span></td></tr>
+		<tr><td>col <span style="color:#1e63b6;">blue</span></td></tr>
+		<tr><td>col <span style="color:#1e63b6;">#909</span></td></tr>
+		<tr><td>col <span style="color:#1e63b6;">?</span></td></tr>
+		<tr><td>pen up</td></tr>
+		<tr><td>pen down</td></tr>
+		<tr><td>c</td></tr>
+	</table>
+</div>
 <div id="turtleBox" style="position:relative;width:500px;height:500px;overflow:hidden;border:1px solid #000000;margin-left:auto;margin-right:auto;">
 	<img id="t" style="position:absolute;width:50px;height:50px;left:-100px;transform-origin:center;" src="/images/logo/turtle.png">
 	<img id="t2" style="position:absolute;width:50px;height:50px;left:-100px;transform-origin:center;" src="/images/logo/turtle.png">
@@ -60,13 +75,15 @@ c                       - clear the canvas
 		place();
 	}
 
-	// move the turtle by d distance (d=100 is full length). turtle wraps around
+	// move the turtle by d distance (d=100 is full length). negative for moving backwards. turtle wraps around
 	function move(d) {
 		ctx.beginPath();
 		ctx.moveTo(x, y);
-		for(let i=0; i<d*5; ++i) {
-			x = x + Math.sin(rot*2*Math.PI/360);
-			y = y - Math.cos(rot*2*Math.PI/360);
+		let dAbs = Math.abs(d);
+		let sign = Math.sign(d);
+		for(let i=0; i<dAbs*5; ++i) {
+			x = x + sign * Math.sin(rot*2*Math.PI/360);
+			y = y - sign * Math.cos(rot*2*Math.PI/360);
 			if(x>=500) restroke(function() {x-=500;});
 			if(y>=500) restroke(function() {y-=500;});
 			if(x<0) restroke(function() {x+=500;});
