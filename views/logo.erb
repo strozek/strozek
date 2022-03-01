@@ -1,13 +1,19 @@
 <!--
 Syntax:
-r <count> [ ... ]       - repeat <count> times
-lt <angle>              - turn left <angle> amount (12 = full turn)
-rt <angle>              - turn right <angle> amount
 go <amount>             - go straight by <amount> (100 = one length)
 back <amount>           - go backwards by <amount>
-col <color>             - switch color. aqua, black, blue, brown, coral, cyan, gold, gray, green, lavender, lime, magenta, navy, olive, orange, pink, purple, red, teal, white, yellow, ?, #hhh
+lt <angle>              - turn left <angle> amount (360 = full turn)
+rt <angle>              - turn right <angle> amount
+col <color>             - switch color
+							named: aqua, black, blue, brown, coral, cyan, gold, gray, green, lavender, lime, magenta, navy, olive, orange, pink, purple, red, teal, white, yellow
+							random: ?
+							hex: #f3d
 pen <down|up>           - put pen down or up
 c                       - clear the canvas
+r <count> [ ... ]       - repeat <count> times
+x                       - value of x (starts at 1) - used for <amount>, <angle>, <count>
+inc <amount>			- increment x by <amount>
+dec <amount>			- decrement x by <amount>
 
 -->
 <html>
@@ -28,6 +34,10 @@ c                       - clear the canvas
 		<tr><td>pen up</td></tr>
 		<tr><td>pen down</td></tr>
 		<tr><td>c</td></tr>
+		<tr><td>r <span style="color:#1e63b6;">10</span> [ <span style="background-color:#cccccc;border-radius:4px;font-size:70%">...</span> ]</td></tr>
+		<tr><td><span style="color:#1e63b6;">x</span></td></tr>
+		<tr><td>inc <span style="color:#1e63b6;">1</span></td></tr>
+		<tr><td>dec <span style="color:#1e63b6;">1</span></td></tr>
 	</table>
 </div>
 <div id="turtleBox" style="position:relative;width:500px;height:500px;overflow:hidden;border:1px solid #000000;margin-left:auto;margin-right:auto;">
@@ -47,14 +57,15 @@ c                       - clear the canvas
 	let rot;       // 0 is straight up, 360 is full rotation, clockwise
 	let ctx;       // the context object
 	let penUp;     // true if pen is up (no drawing)
+	let register;  // the value of the "x" register
 	let commands;  // the array of commands currently being executed
 
 	// place the turtle in the appropriate spot
 	function place() {
-		$('#t').css({left: parseInt(x-25), top: parseInt(y-25), transform: 'rotate('+parseInt(rot)+'deg)'});
-		$('#t2').css({left: parseInt(x-25+(x>250 ? -500: 500)), top: parseInt(y-25), transform: 'rotate('+parseInt(rot)+'deg)'});
-		$('#t3').css({left: parseInt(x-25), top: parseInt(y-25+(y>250 ? -500 : 500)), transform: 'rotate('+parseInt(rot)+'deg)'});
-		$('#t4').css({left: parseInt(x-25+(x>250 ? -500: 500)), top: parseInt(y-25+(y>250 ? -500 : 500)), transform: 'rotate('+parseInt(rot)+'deg)'});
+		$('#t').css({left: parseFloat(x-25), top: parseFloat(y-25), transform: 'rotate('+parseFloat(rot)+'deg)'});
+		$('#t2').css({left: parseFloat(x-25+(x>250 ? -500: 500)), top: parseFloat(y-25), transform: 'rotate('+parseFloat(rot)+'deg)'});
+		$('#t3').css({left: parseFloat(x-25), top: parseFloat(y-25+(y>250 ? -500 : 500)), transform: 'rotate('+parseFloat(rot)+'deg)'});
+		$('#t4').css({left: parseFloat(x-25+(x>250 ? -500: 500)), top: parseFloat(y-25+(y>250 ? -500 : 500)), transform: 'rotate('+parseFloat(rot)+'deg)'});
 	}
 
 	// close the stroke, alter x or y, and start stroke again
@@ -106,6 +117,7 @@ c                       - clear the canvas
 		y = 250.0;
 		rot = 0.0;
 		penUp = false;
+		register = 1;
 		place();
 	}
 
@@ -114,15 +126,23 @@ c                       - clear the canvas
 		return (s.match(/^[a-zA-Z#]+/) != null);
 	}
 
+	// interpret a string s as an amount. Could be a number (with optional sign) or the register `x` (which is replaced with its value)
+	function evaluateAmount(s) {
+		if(s=='x') {
+			return register;
+		}
+		return parseFloat(s);
+	}
+
 	// execute the command, i is the current index into `commands` and isLoop is true if we're inside an `r` loop
 	// returns the next index to process
 	function execute(i, isLoop) {
 		while(i < commands.length) {
-			if(['lt', 'rt', 'go', 'back'].includes(commands[i])) {
+			if(['lt', 'rt', 'go', 'back', 'inc', 'dec'].includes(commands[i])) {
 				if (i + 1 >= commands.length) {
 					throw i + 1;
 				}
-				let amount = parseInt(commands[i + 1]);
+				let amount = evaluateAmount(commands[i + 1]);
 				if (isNaN(amount)) {
 					throw i + 1;
 				}
@@ -130,6 +150,8 @@ c                       - clear the canvas
 				if(commands[i]=='rt') rotate(amount);
 				if(commands[i]=='go') move(amount);
 				if(commands[i]=='back') move(-amount);
+				if(commands[i]=='inc') register += amount;
+				if(commands[i]=='dec') register -= amount;
 				i += 2;
 			} else if(commands[i] == 'col') {
 				if (i + 1 >= commands.length) {
@@ -158,7 +180,7 @@ c                       - clear the canvas
 				if (i + 1 >= commands.length) {
 					throw i + 1;
 				}
-				let amount = parseInt(commands[i + 1]);
+				let amount = evaluateAmount(commands[i + 1]);
 				if (isNaN(amount) || amount==0) {
 					throw i + 1;
 				}
@@ -195,8 +217,9 @@ c                       - clear the canvas
 		if(inputSubstring == '') {
 			return null;
 		}
-		// words, or numbers (including a negative sign)
-		match = inputSubstring.match(/^([a-zA-Z]+|[0-9-]+)\s*/);
+		// words, or numbers (including +, -, . -)
+		// TODO: parse numbers properly; right now "45.6-.+5" is accepted)
+		match = inputSubstring.match(/^([a-zA-Z]+|[0-9.+-]+)\s*/);
 		if(!match) {
 			// hex color definition e.g. #f0a
 			match = inputSubstring.match(/^(#[0-9a-f][0-9a-f][0-9a-f])\s*/);
