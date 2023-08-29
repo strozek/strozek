@@ -38,6 +38,32 @@ dec <amount>			- decrement x by <amount>
 		<tr><td><span style="color:#1e63b6;">x</span></td></tr>
 		<tr><td>inc <span style="color:#1e63b6;">1</span></td></tr>
 		<tr><td>dec <span style="color:#1e63b6;">1</span></td></tr>
+		<tr><td style="padding-top:20px;">
+			<select style="font-family:monospace;font-size:18px;" onchange="fill(this.value)">
+				<option selected disabled>Pick a preset</option>
+				<option value="r 80 [ col pink go x rt 12 col purple go x rt 12 inc 0.1 ]">1</option>
+				<option value="r 36 [ col ? rt 10 r 8 [ go 10 lt 45 ] ]">2</option>
+				<option value="r 500 [ lt 1 go 200 ]">3</option>
+				<option value="r 40 [ r 4 [ go x rt 90 ] lt 135 pen up go 1 rt 135 pen down inc 1 ]">4</option>
+				<option value="r 120 [ r 5 [ go x rt 72 ] lt 135 pen up go 0.5 rt 135 pen down col ? inc 0.5 ]">5</option>
+				<option value="r 20 [ lt 5 r 20 [ lt 10 r 20 [ col ? go 5 lt 20 ] ] ]">6</option>
+				<option value="r 20 [ lt 5 r 20 [ col ? lt 10 r 20 [ go 8 lt 18 ] ] ]">7</option>
+				<option value="r 100 [ lt 2 go 20 lt 1 go 10 ]">8</option>
+				<option value="lt 1 r 10000 [ col ? go 5 ]">9</option>
+				<option value="r 12 [ r 75 [ go 15 back 15 rt 2 ] go 30 ]">10</option>
+				<option value="r 4 [ r 20 [ lt 160 go 5 rt 160 go 5 ] rt 90 ]">11</option>
+				<option value="r 36 [ col ? go 20 back 20 r 10 [ go 10 back 10 rt 1 ] ]">12</option>
+				<option value="r 100 [ r 20 [ pen up go 5 pen down go 5 ] rt 90 go 1 lt 90 go 1 ]">13</option>
+				<option value="r 5 [ go 6 back 6 rt 2 r 5 [ go 10 back 9 rt 2 r 4 [ go 20 back 19 rt 3 ] ] ]">14</option>
+				<option value="r 45 [ r 4 [ go 3 rt 90 ] lt 90 go 20 back 20 rt 90 lt 8 go 3 ]">15</option>
+				<option value="r 200 [ r 4 [ go x rt x ] inc 1 ]">16</option>
+				<option value="r 300 [ go 5 rt x inc x ]">17</option>
+				<option value="r 20 [ r x [ go 2 rt 15 ] go 15 rt 180 inc 1 ]">18</option>
+				<option value="pen up go 50 pen down rt 180 r 300 [ col ? go 100 rt 90 pen up go 0.33 pen down lt 90 ]">19</option>
+				<option value="r 23 [ r x [ go 2 rt 90 go 2 lt 90 ] rt 90 inc 1 ]">20</option>
+				<option value="c dec 0.5 r 155 [ r x [ go 1 rt 90 go 1 lt 90 ] rt 90 inc 0.5 ]">21</option>
+			</select>
+		</td></tr>
 	</table>
 </div>
 <div id="turtleBox" style="position:relative;width:500px;height:500px;overflow:hidden;border:1px solid #000000;margin-left:auto;margin-right:auto;">

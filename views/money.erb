@@ -1,0 +1,300 @@
+<html>
+<head>
+  <style>
+      body {
+          font-family: Georgia;
+          font-size: 18px;
+          padding: 10px;
+      }
+      a {
+          color: #777777;
+          text-decoration-style: dashed;
+          text-decoration-color: #cccccc;
+          text-decoration-thickness: 1px;
+      }
+      #home {
+          width: 360px;
+          height: 45px;
+          background: #acd5f4;
+          border: solid 0.9px #000000;
+          padding: 4.5px;
+      }
+      .bill {
+          width: 63px;
+          height: 22px;
+          background: #77ff77;
+          border: solid 0.9px #000000;
+          text-align: center;
+          cursor: pointer;
+          display: inline-block;
+      }
+      .bill-static {
+          width: 63px;
+          height: 22px;
+          border: solid 0.9px #000000;
+          text-align: center;
+          display: inline-block;
+      }
+      .grid-empty {
+          width: 54px;
+          height: 40px;
+          border: solid 0.9px #ffffff;
+          margin-bottom: 4px;
+          display: inline-block;
+      }
+      .grid-square {
+          width: 54px;
+          height: 40px;
+          border: solid 0.9px #000000;
+          margin-bottom: 4px;
+          display: inline-block;
+      }
+      .grid-drop {
+          width: 54px;
+          height: 22px;
+          background: #ffff00;
+          position: absolute;
+          z-index: -100;
+      }
+      .aligned-top {
+          vertical-align: top;
+      }
+      .padded {
+          padding-right: 36px;
+          padding-bottom: 36px;
+      }
+      .month-header {
+          padding-top: 5px;
+          padding-bottom: 5px;
+          padding-left: 9px;
+          background: #ffbbbb;
+          font-weight: bold;
+      }
+  </style>
+  <script src="/js/jquery-1.9.1.js"></script>
+  <script src="/js/jquery-ui-1.10.2.custom.min.js"></script>
+  <script src="/js/jquery.ui.touch-punch.min.js"></script>
+  <script>
+
+      // amount of interest on $20 that you get with every week you wait
+      let interest = [0.00, 0.25, 0.50, 0.75, 1.25, 1.50, 2.00, 2.50, 3.00, 3.50, 4.00, 4.50, 5.00, 6.00, 6.50, 7.00, 7.50, 8.00, 8.50];
+
+      let placements = [];        // for each $20 bill, where it's placed (0=you keep, 1=first drop zone, etc.)
+      let dropCount;              // how many drop zones are there
+      let dropDates = [];         // for each drop zone, what is the underlying date (needed for committed)
+      let lastDropDate;           // the string representing the date of the last drop zone
+      let committedByDate = [];   // hash mapping date (only month/day/year) to total amount committed
+      let committedTotal = 0;     // total amount committed, to add when generating totals
+
+      // fetch the current cash and split into $20 bills and remainder
+      let currentCash = localStorage.getItem('currentCash');
+      if(currentCash == null) {
+          currentCash = 20.00;
+      } else {
+          currentCash = parseFloat(currentCash);
+      }
+
+      // fetch all committed cash
+      let committed = localStorage.getItem('committed');
+      if(committed == null) {
+          committed = [];
+      } else {
+          committed = JSON.parse(committed);
+          for(let item of committed) {
+              let dateString = new Date(item.date).toDateString();
+              if(committedByDate[dateString] === undefined) {
+                  committedByDate[dateString] = 0.00;
+              }
+              committedByDate[dateString] += item.amount;
+              committedTotal += item.amount;
+          }
+      }
+
+      // figure out how many bills we have
+      let billCount = Math.floor(currentCash/20.0);
+      let remainder = currentCash-billCount*20;
+
+      // add to the committed array (used to add allowance on top of currently commited)
+      function addToCommitted(date, amount) {
+          let dateString = new Date(date).toDateString();
+          if(committedByDate[dateString] === undefined) {
+              committedByDate[dateString] = 0.00;
+          }
+          committedByDate[dateString] += amount;
+          committedTotal += amount;
+      }
+
+      // change the total amount of cash you have - reloads the page
+      function editCurrentCash() {
+          let newCash = prompt("Enter current cash (ignore change)", '$'+currentCash.toFixed(2));
+          localStorage.setItem('currentCash', newCash.replace('$', ''));
+          location.reload();
+      }
+
+      // update the total amount shown at the bottom of the screen
+      function updateTotal() {
+          let total = remainder + committedTotal;
+          for(let i=0; i<billCount; ++i) {
+              total += 20.00 + interest[placements[i]];
+          }
+          $('#total').html('By <b>' + lastDropDate + '</b> you will have <b>$' + total.toFixed(2) + '</span></b>');
+      }
+
+      // update the bill's placement state
+      function updateAmount(elt, placement) {
+          let billId = parseInt(elt.attr('id').substr(4));
+          placements[billId] = placement;
+          let amount = 20.00 + interest[placement];
+          elt.html("$" + amount.toFixed(2));
+          updateTotal();
+      }
+
+      // commit the savings decisions
+      function commit() {
+          for(let i=0; i<billCount; ++i) {
+              if(placements[i]>0) {
+                  // a bill was placed somewhere other than the wallet - store it in committed
+                  let amount = 20.00 + interest[placements[i]];
+                  committed.push({amount: amount, date: dropDates[placements[i]]});
+                  currentCash -= 20.00;
+              }
+          }
+          localStorage.setItem('currentCash', currentCash);
+          localStorage.setItem('committed', JSON.stringify(committed));
+          location.reload();
+      }
+
+      // clear committed
+      function clearCommitted() {
+          committed = [];
+          localStorage.setItem('committed', JSON.stringify(committed));
+          location.reload();
+      }
+
+      // helper function to add a number of days (can be negative) to a date
+      function addDays(date, days) {
+          let result = new Date(date);
+          result.setDate(result.getDate() + days);
+          return result;
+      }
+
+      // construct the calendar, using optional date – and if not provided, using today's date
+      function makeCalendar(dateOverride) {
+          let d = new Date();     // today's date
+          if(dateOverride !== undefined) {    // override with parameter if given
+              d = dateOverride;
+          }
+          // find the date of the first drop zone – the first sunday that is >=7 days from now
+          let drop;
+          if(d.getDay() == 0) {
+              drop = addDays(d, 7);
+          }
+          else {
+              drop = addDays(d, 7 + (7-d.getDay()));
+          }
+          // find the date when we want to start drawing the calendar
+          let cal = addDays(drop, -6);
+          if(cal.getMonth() != drop.getMonth()) {
+              cal = new Date(drop.getFullYear(), drop.getMonth(), 1);
+          }
+          let currentMonth = null;
+          let s = '';
+          let monthAlternator = false;
+          dropCount = 0;
+
+          while(dropCount<13) {
+              // start a new month
+              if (!monthAlternator) {
+                  s += '<tr class="aligned-top"> ';
+              }
+              s += '<td class="padded"> ';
+              s += '<p class="month-header">' + cal.toLocaleDateString('en-us', {month: 'long'}) + '</p> ';
+              let emptyCount = cal.getDay() == 0 ? 6 : cal.getDay() - 1;
+              for (let i = 0; i < emptyCount; ++i) {
+                  s += '<div class="grid-empty">&nbsp;</div> ';
+              }
+              currentMonth = cal.getMonth();
+              monthAlternator = !monthAlternator;
+
+              // render each day
+              while (cal.getMonth() == currentMonth) {
+                  if (cal.getDay() == 0) {
+                      addToCommitted(cal.toString(), 3.00);
+                      dropCount += 1;
+                      dropDates[dropCount] = cal.toString();
+                      s += '<div class="grid-square">' + cal.getDate() + '<div id="grid' + dropCount + '" class="grid-drop">';
+                      if(committedByDate[cal.toDateString()]) {
+                          s += '$' + committedByDate[cal.toDateString()].toFixed(2);
+                      }
+                      s += '</div></div><br> ';
+                      lastDropDate = cal.toLocaleDateString('en-us', {month: 'long', day: 'numeric'});
+                  } else {
+                      s += '<div class="grid-square">' + cal.getDate() + '</div> ';
+                  }
+                  cal = addDays(cal, 1);
+              }
+
+              // end the month
+              if (cal.getDay() != 1) {
+                  let emptyCount = cal.getDay() == 0 ? 1 : (8 - cal.getDay());
+                  for (let i = 0; i < emptyCount; ++i) {
+                      s += '<div class="grid-empty">&nbsp;</div> ';
+                  }
+              }
+              s += '</td>';
+              if (!monthAlternator) {
+                  s += '</tr>';
+              }
+          }
+          $('#calendar').append(s);
+      }
+
+      $(document).ready(function() {
+          // generate all bills
+          for(let i=0; i<billCount; ++i) {
+              $('#home').append('<div class="bill" id="bill' + i + '">$20.00</div> ');
+              $('#bill' + i).draggable({revert: 'invalid'});
+              placements[i] = 0;
+          }
+          // display the remainder and the total amount
+          if(remainder) {
+              $('#home').append('<div class="bill-static">$' + remainder.toFixed(2) + '</div>');
+          }
+
+          // generate the calendar
+          makeCalendar();
+
+          // generate all drop zones
+          $('#home').droppable({drop: function(event, ui) {updateAmount(ui.draggable, 0);}});
+          for(let i=1; i<=dropCount; ++i) {
+              $('#grid' + i).droppable({drop: function(event, ui) {updateAmount(ui.draggable, i);}});
+          }
+
+          // update the total
+          updateTotal();
+      });
+  </script>
+</head>
+<body>
+<table id="calendar">
+  <tr class="aligned-top">
+    <td class="padded">
+      <div id="home">
+        <b>Your Wallet</b>
+      </div>
+    </td>
+    <td class="padded">
+      <p>
+        <span id="total"></span>
+      </p>
+    </td>
+  </tr>
+</table>
+<br>
+<p>
+  <a href="javascript:editCurrentCash()">update cash</a> &nbsp; &nbsp;
+  <a href="javascript:commit()">commit</a> &nbsp; &nbsp;
+  <a href="javascript:clearCommitted()">clear commited</a> &nbsp; &nbsp;
+</p>
+</body>
+</html>

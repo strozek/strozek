@@ -34,11 +34,6 @@ class Strozek < Sinatra::Base
 		erb :loveandmath
 	end
 
-  @host = /pandaprotection.info/
-  get '/', :host_name => @host do
-    erb :panda
-  end
-
 	@host = /lukasz.work/
 	get '/', :host_name => @host do
 		erb :index
@@ -129,6 +124,10 @@ class Strozek < Sinatra::Base
 
   get '/logo' do
     erb :logo
+  end
+
+  get '/money' do
+    erb :money
   end
 
 	run! if (app_file == $0)
