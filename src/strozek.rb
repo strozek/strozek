@@ -125,5 +125,9 @@ class Strozek < Sinatra::Base
     erb :money
   end
 
+  get '/landrun' do
+    erb :landrun
+  end
+
 	run! if (app_file == $0)
 end

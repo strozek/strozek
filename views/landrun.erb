@@ -1,0 +1,596 @@
+<!--
+
+    LANDRUN designed by Iza Strozek, November 2024
+
+
+    Backlog:
+
+    * Support the spring object
+	    * Collision test (player must be in falling mode)
+	    * Mechanics: fly player up, but allow the player to move left/right on its way up
+    * Geyser
+	    * Turn on and off and animate
+	    * Collision test
+	    * In case of collision, player flies up into the air & dies
+    * Editor
+    * Screens
+	    * Intro screen
+	    * Choose character screen
+	    * Dead - try again
+	    * Well done - next level
+    * Other Gameplay basics
+	    * Drag the on-screen joystick to move
+    * Multiple levels
+    * Post MVP
+        * Constrain camera movements (before the player gets to the cave)
+        * Draw the skinny walls
+        * Clouds
+        * When collected, coins float up to the score
+        * Sounds (collecting coin, bubbles, spring)
+-->
+
+<html>
+<head>
+    <title>Landrun</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        #gameframe {
+            position: absolute;
+            overflow: hidden;
+        }
+        #sky {
+            background: rgb(118,110,255);
+            background: linear-gradient(180deg, rgba(118,110,255,1) 26%, rgba(124,162,228,1) 46%, rgba(79,210,230,1) 68%, rgba(213,239,247,1) 100%);
+            position: absolute;
+        }
+        #cave {
+            background: rgb(64,34,9);
+            background: linear-gradient(180deg, rgba(64,34,9,1) 9%, rgba(92,44,5,1) 26%, rgba(136,83,20,1) 68%, rgba(164,117,10,1) 88%, rgba(215,155,19,1) 97%);
+            position: absolute;
+        }
+        #player {
+            position: absolute;
+        }
+        #controls {
+            position: absolute;
+            right: 60px;
+            bottom: 50px;
+            width: 150px;
+            height: 150px;
+            border-radius: 75px;
+            background: #ffffff;
+            border: #000000 solid 1px;
+        }
+        #world {
+            position: absolute;
+        }
+        #score {
+            position: relative;
+            width: 300px;
+            height: 40px;
+            top: 0p;
+            left: 0px;
+            background: #ffffff;
+            border: 2px solid #888888;
+            text-align: center;
+            padding-top: 15px;
+        }
+        #popup {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            visibility: hidden;
+            background: #eeeeff;
+            padding-top: 200px;
+        }
+        .sprite {
+            position: absolute;
+        }
+        .coin {
+            -webkit-animation:spin 4s linear infinite;
+            -moz-animation:spin 4s linear infinite;
+            animation:spin 4s linear infinite;
+        }
+        @-moz-keyframes spin {
+            100% { -moz-transform: rotate3d(0, 1, 0, 3.142rad); }
+        }
+        @-webkit-keyframes spin {
+            100% { -webkit-transform: rotate3d(0, 1, 0, 3.142rad); }
+        }
+        @keyframes spin {
+            100% {
+                -webkit-transform: rotate3d(0, 1, 0, 6.2832rad);
+                transform: rotate3d(0, 1, 0, 6.2832rad);
+            }
+        }
+    </style>
+</head>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<body>
+<div id="gameframe">
+    <div id="sky"></div>
+    <div id="cave"></div>
+    <div id="world"></div>
+    <div id="player"></div>
+</div>
+<div id="score">SCORE: 0</div>
+<div id="popup"></div>
+<div id="controls">
+    <div style="position: absolute; left: 10px; top: 55px; font-size: 40px; cursor: pointer;" onmousedown="arrowLeft = true;" onmouseup="arrowLeft = false;">&lHar;</div>
+    <div style="position: absolute; left: 100px; top: 55px; font-size: 40px; cursor: pointer;" onmousedown="arrowRight = true;" onmouseup="arrowRight = false;">&rHar;</div>
+    <div style="position: absolute; left: 55px; top: 10px; font-size: 40px; cursor: pointer;" onmousedown="arrowUp = true;" onmouseup="arrowUp = false;">&uHar;</div>
+</div>
+</body>
+
+<script>
+
+    /* map legend: 				movement state:
+        * = coin 					rest
+        # = hay 					hop
+        S = start 					hop-bounce
+        G = ground 					jump
+        P = pond 					jump-bounce
+        C = crossroads sign
+        F = finish
+        $ = spring
+        T = tree
+
+
+    */
+
+    const SCALE = 80;
+    const GRID = false;
+
+    const SPRITE_TRANSFORM = {};
+    SPRITE_TRANSFORM['hay'] =  {left: -0.29, top: -0.29, right: 0.29, bottom: 0.29};
+    SPRITE_TRANSFORM['pond'] = {left: 0, top: -0.15, right: 0, bottom: -0.75};
+    SPRITE_TRANSFORM['coin'] = {left: 0.33, top: 0.33, right: -0.33, bottom: -0.33, customClass: 'coin'};
+    SPRITE_TRANSFORM['greenstar'] = {left: 0, top: 0, right: -0.4, bottom: 0};
+    SPRITE_TRANSFORM['bluestar'] = {left: 0.2, top: 0, right: -0.2, bottom: 0};
+    SPRITE_TRANSFORM['spring'] = {left: 0, top: 0.3, right: -0.2, bottom: 0.2};
+    SPRITE_TRANSFORM['fork'] = {left: 0, top: 0, right: 0, bottom: 0.2};
+    SPRITE_TRANSFORM['ground-inside'] = {left: -0.1, top: -0.15, right: 0.1, bottom: 0.15};
+    SPRITE_TRANSFORM['ground-flat'] = {left: -0.1, top: -0.25, right: 0.1, bottom: 0.15};
+    SPRITE_TRANSFORM['ground-edge-curved'] = {left: -0.15, top: -0.15, right: -0.8, bottom: 0.25};
+    SPRITE_TRANSFORM['ground-edge-straight'] = {left: -0.15, top: -0.25, right: -0.8, bottom: 0.25};
+    SPRITE_TRANSFORM['wall'] = {left: -0.15, top: -0.15, right: 0.15, bottom: 0.15};
+
+    const level = [
+        '                        ',
+        '           *            ',
+        '          *#            ',
+        '         *##            ',
+        '        *###T           ',
+        'S *    *####T           ',
+        'GGG   *#####T *         ',
+        'GGG   GGGGGGGPG #  C   F',
+        'GGGGGGGGGGGGGGG   GG * G',
+        'GGGGGGGGGGGGGGG   GG * G',
+        'GGGGGGGGGGGGGGG* $G  * G',
+        'GGGGGGG * GGGGGGPGGPP*PG',
+        'GGGGGGG #  GGG  ******TG',
+        'GGGGGGG ##* GG GGGGGGGGG',
+        'GGGGGG *###* G GGGGGGGGG',
+        'GGGGF *#####*  GGGGGGGGG',
+        'GGGGGGGGGGGGGGGGGGGGGGGG'
+    ];
+    const props = {
+        caveLevel: 11,							// y coordinate when the cave background starts
+        rockLevel: 5,							// y coordinate when the rock background starts
+        playerVariants: [{width: 1.0, offsetX: 0.5, offsetY: 0.3},	// width: how wide the player sprite should be for a given variant
+            {width: 1.1, offsetX: 0.5, offsetY: 0.3},	// offsetX: offset between left edge and center of gravity in % of SCALE
+            {width: 0.7, offsetX: 0.5, offsetY: 0.5}]	// offsetY: offset between top edge and center of gravity in % of SCALE
+    }
+    const H = 0.35;	// how high the player hops when moving left/right, as a function of SCALE
+
+
+    const YS = level.length;
+    const XS = level[0].length;
+    const SPEED = SCALE/40;
+    const FRAME_WIDTH = Math.min(window.innerWidth, 20*SCALE);
+    const FRAME_HEIGHT = Math.min(window.innerHeight, 10*SCALE);
+
+    let blocker = [];	// this 2d array defines all spaces which the player can't get through. first dimension = x, second = y
+
+    // the player's information
+    let playerX, playerY;		// player's center of gravity
+    let state;					// movement state
+    let direction;				// 1 if facing right, -1 if facing left
+    let hopCounter;				// counter for hops and jumps
+    let referenceY;				// player's Y position for reference in determining parabolas
+    let referenceX;				// used to adjust the player after falling
+    let targetX;				// player's X target position (player getting adjusted after falling)
+
+    let gameOn = true;	// should the game continue?
+    let coins = [];		// coin collection
+    let score = 0;		// coin score
+    let finishes = [];	// all the finish portals
+    let ponds = [];		// all the ponds
+
+    // input information
+    let arrowLeft = false;
+    let arrowRight = false;
+    let arrowUp = false;
+    let arrowDown = false;
+
+    // Draw the game world
+    function drawWorld() {
+
+        // initiate the blocker array
+        for(let x=0; x<XS; x += 1) {
+            blocker.push([]);
+        }
+
+        // draw the background wall
+        for(let y=YS-1; y>=0; y -= 1) {
+            for(let x=0; x<XS; x += 1) {
+                if(y>=props.rockLevel && y<props.caveLevel) {
+                    draw('wall', x, y);
+                }
+            }
+        }
+
+        for(let y=YS-1; y>=0; y -= 1) {
+            for(let x=0; x<XS; x += 1) {
+                let c = level[y][x];
+                if(c == '#') {
+                    draw('hay', x, y);
+                    blocker[x][y] = true;
+                }
+                if(c == '*') {
+                    draw('coin', x, y, {id: `coin${coins.length}`});
+                    coins.push({x: x, y: y});
+                }
+                if(c == '$') {
+                    draw('spring', x, y);
+                }
+                if(c == 'S') {
+                    draw('greenstar', x, y);
+                    playerX = SCALE*(0.5+x);
+                    playerY = SCALE*(0.5+y);
+                }
+                if(c == 'F') {
+                    draw('bluestar', x, y);
+                    finishes.push({x: x, y: y});
+                }
+                if(c == 'C') {
+                    draw('fork', x, y);
+                }
+                if(c == 'G' || c == 'P') {
+                    if(c == 'G' && lookup(x, y-1) != 'G' && lookup(x, y-1) != 'P') {
+                        draw('ground-flat', x, y);
+                    }
+                    else if(c == 'P') {
+                        draw('ground-flat', x, y);
+                    } else {
+                        draw('ground-inside', x, y);
+                    }
+                    if(c == 'G') {
+                        blocker[x][y] = true;
+                    }
+                }
+                if(c != 'G' && c!= 'P' && lookup(x-1, y) == 'G' && y<props.caveLevel) {
+                    if(lookup(x-1, y-1) == 'G') {
+                        draw('ground-edge-straight', x, y);
+                    }
+                    else {
+                        draw('ground-edge-curved', x, y);
+                    }
+                }
+
+                // For debugging, show the grid
+                if(GRID) {
+                    $('#world').append(`<div class="sprite" style="left: ${x*SCALE}px; top: ${y*SCALE}px; width: ${SCALE}px; height: ${SCALE}px; border:1px solid #eeeeee; opacity:0.4">`);
+                }
+            }
+        }
+
+        // Draw a scaled tree
+        for(let x=0; x<XS; x += 1) {
+            for(let y=0; y<YS; y += 1) {
+                if(level[y][x] == 'T') {
+                    let treeStart = y;
+                    while(y<YS && level[y][x] == 'T') {
+                        blocker[x][y] = true;
+                        y += 1;
+                    }
+                    draw('tree', x, treeStart, {bottom: (y-treeStart)-1+0.2});
+                }
+            }
+        }
+
+        // Draw a scaled pond
+        for(let y=0; y<YS; y += 1) {
+            for(let x=0; x<XS; x += 1) {
+                if(level[y][x] == 'P') {
+                    let pondStart = x;
+                    while(x<XS && level[y][x] == 'P') {
+                        x += 1;
+                    }
+                    draw('pond', pondStart, y, {right: (x-pondStart)-1});
+                    ponds.push({x: pondStart, y: y, size: x-pondStart});
+                }
+            }
+        }
+    }
+
+    // Return the map element at position (x, y), or null if we're out of bounds
+    function lookup(x, y) {
+        if(x<0 || y<0 || x>=XS || y>=YS) {
+            return null;
+        }
+        return level[y][x];
+    }
+
+    // Draw a sprite in a grid position, with an optional custom transform
+    function draw(sprite, x, y, customTransform) {
+        let left = x*SCALE;
+        let top = y*SCALE;
+        let width = SCALE;
+        let height = SCALE;
+        let txf = {left: 0, top: 0, right: 0, bottom: 0};
+        txf = {...txf, ...SPRITE_TRANSFORM[sprite], ...customTransform};
+        let classes = ['sprite'];
+        let id = '';
+        if(txf) {
+            left += txf.left*SCALE;
+            top += txf.top*SCALE;
+            width += (txf.right-txf.left)*SCALE;
+            height += (txf.bottom-txf.top)*SCALE;
+            if(txf.customClass) {classes.push(txf.customClass);}
+            if(txf.id) {id = `id="${txf.id}" `;}
+        }
+        $('#world').append(`<img ${id} src="sprites/${sprite}.png" class="${classes.join(' ')}" style="left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px;">`);
+    }
+
+    function checkCoinCollision() {
+        for(let i=0; i<coins.length; i += 1) {
+            if(coins[i] && playerX >= (coins[i].x+0.25)*SCALE && playerX <= (coins[i].x+0.75)*SCALE && playerY >= (coins[i].y+0.25)*SCALE && playerY <= (coins[i].y+0.75)*SCALE) {
+                // got the coin!
+                $(`#coin${i}`).css({display: 'none'});
+                delete(coins[i]);
+                score += 5;
+                $('#score').html(`SCORE: ${score}`);
+                break;
+            }
+        }
+    }
+
+    function checkFinishCollision() {
+        for(let i=0; i<finishes.length; i += 1) {
+            if(playerX >= (finishes[i].x+0.2)*SCALE && playerX <= (finishes[i].x+0.8)*SCALE && playerY >= (finishes[i].y+0.2)*SCALE && playerY <= (finishes[i].y+0.8)*SCALE) {
+                $('#popup').css({visibility: 'visible'});
+                $('#popup').html("CONGRATULATIONS!");
+                gameOn = false;
+            }
+        }
+    }
+
+    function checkPondAndAbyssCollision() {
+        let collisionFound = false;
+        for(let i=0; i<ponds.length; i += 1) {
+            if(playerX >= (ponds[i].x+0.2)*SCALE && playerX <= (ponds[i].x+ponds[i].size-0.2)*SCALE && playerY >= (ponds[i].y+0.2)*SCALE && playerY <= (ponds[i].y+0.8)*SCALE) {
+                collisionFound = true;
+            }
+        }
+        if(playerY > YS*SCALE) {
+            collisionFound = true;
+        }
+        if(collisionFound) {
+            $('#popup').css({visibility: 'visible'});
+            $('#popup').html("YOU ARE DEAD!");
+            gameOn = false;
+        }
+    }
+
+    // Draw the player sprite according to its current state
+    function drawPlayer() {
+
+        let variant;
+        if(state == 'rest') {variant = 0;}
+        else if(state == 'hop' || state == 'hop-bounce' || state == 'jump' || state == 'jump-bounce' || state == 'fall' || state == 'adjust') {variant = 1;}
+
+        $('#playerImage')[0].src = `sprites/rabbit-${variant}.png`;
+        $('#playerImage').css({width: SCALE*props.playerVariants[variant].width});
+        let playerWidth = $('#playerImage')[0].width;
+        let playerHeight = $('#playerImage')[0].height;
+        $('#player').css({left: playerX-SCALE*props.playerVariants[variant].offsetX, top: playerY-SCALE*props.playerVariants[variant].offsetY, transform: 'scaleX(' + direction + ')'});
+
+        checkCoinCollision();
+        checkFinishCollision();
+        checkPondAndAbyssCollision();
+    }
+
+    function isBlocked(deltaX, deltaY, microDeltaX = 0, microDeltaY = 0) {
+        let testX = parseInt((playerX + microDeltaX)/SCALE) + deltaX;
+        let testY = parseInt((playerY + microDeltaY)/SCALE) + deltaY;
+        if(testX<0 || testX>=XS || testY<0) {return true;}
+        if(testY>=YS) {return false;}
+        return blocker[testX][testY];
+    }
+
+    // return the vertical position for the player along a parabola defining
+    // a hop from 0 @ i=0 to maximum height of H @ i=SCALE/2 and back to 0 @ i=SCALE
+    function parabola(i) {
+        let a = -4*H/SCALE;
+        let b = 4*H;
+        let y = a*i*i + b*i;
+        return y;
+    }
+
+    function freefall(i) {
+        if(i < SCALE) {
+            return ((i/SCALE)+0.25)*((i/SCALE)+0.25)*SCALE;
+        } else {
+            return (i-SCALE)*2.5+SCALE*1.5; // TODO: Make this scalable
+        }
+    }
+
+    function checkIfFall() {
+        if(!isBlocked(0, 1)) {
+            state = 'fall';
+            referenceY = playerY;
+            hopCounter = 0;
+            return true;
+        }
+        return false;
+    }
+
+    function gameLoop() {
+        if(!gameOn) {
+            return;
+        }
+        if(state == 'rest') {
+            if(!checkIfFall()) {
+                if(arrowRight || arrowLeft) {
+                    direction = arrowRight ? 1 : -1;
+                    if(!isBlocked(direction, 0)) {
+                        state = 'hop';
+                    } else {
+                        state = 'hop-bounce';
+                    }
+                    referenceY = playerY;
+                    hopCounter = 0;
+                } else if(arrowUp) {
+                    if(!isBlocked(direction, -1)) {
+                        state = 'jump';
+                    } else {
+                        state = 'jump-bounce';
+                    }
+                    referenceY = playerY;
+                    hopCounter = 0;
+                }
+            }
+        }
+        else if(state == 'hop') {
+            hopCounter += SPEED;
+            playerX += direction*SPEED;
+            playerY = referenceY - parabola(hopCounter);
+            if(hopCounter >= SCALE) {
+                state = 'rest';
+            }
+        }
+        else if(state == 'hop-bounce') {
+            hopCounter += SPEED;
+            if(hopCounter <= SCALE/2) {
+                playerX += direction*SPEED;
+            } else {
+                playerX -= direction*SPEED;
+            }
+            playerY = referenceY - parabola(hopCounter);
+            if(hopCounter >= SCALE) {
+                state = 'rest';
+            }
+        }
+        else if(state == 'jump') {
+            hopCounter += SPEED;
+            playerX += direction*SPEED;
+            playerY = referenceY - parabola(hopCounter) - hopCounter;
+            if(hopCounter >= SCALE) {
+                state = 'rest';
+            }
+        }
+        else if(state == 'jump-bounce') {
+            hopCounter += SPEED;
+            if(hopCounter < SCALE/2) {
+                playerX += direction*SPEED;
+                playerY = referenceY - parabola(hopCounter) - hopCounter;
+            } else {
+                playerX -= direction*SPEED;
+                playerY = referenceY - parabola(hopCounter) - (SCALE-hopCounter);
+            }
+            if(hopCounter >= SCALE) {
+                state = 'rest';
+            }
+        }
+        else if(state == 'fall') {
+            hopCounter += SPEED;
+            if(arrowRight && !isBlocked(0, 0, SPEED, 0)) {
+                direction = 1;
+                playerX += SPEED;
+            } else if(arrowLeft && !isBlocked(0, 0, -SPEED, 0)) {
+                direction = -1;
+                playerX -= SPEED;
+            }
+            playerY = referenceY + freefall(hopCounter);
+            if(isBlocked(0, 0, 0, SCALE/2)) {
+                state = 'adjust';
+                referenceX = playerX;
+                referenceY = playerY;
+                targetX = Math.round(playerX/SCALE-0.5)*SCALE+(SCALE/2);
+                hopCounter = 0;
+            }
+        }
+        else if(state == 'adjust') {
+            // to adjust the player's X position after a fall, we use the parabola but scale it down to 1/4
+            hopCounter += SPEED;
+            playerX = (referenceX*(SCALE/4-hopCounter) + targetX*hopCounter) / (SCALE/4);
+            playerY = referenceY - parabola(hopCounter*4)/4;
+            if(hopCounter >= SCALE/4) {
+                state = 'rest';
+            }
+        }
+        drawPlayer();
+        let frameLeft = $('#gameframe')[0].scrollLeft;
+        let frameTop = $('#gameframe')[0].scrollTop;
+        if(playerX-200 < frameLeft) {$('#gameframe')[0].scrollLeft = Math.max(frameLeft-2, 0);}
+        if(playerY-100 < frameTop) {$('#gameframe')[0].scrollTop = Math.max(frameTop-2, 0);}
+        if(playerX+200 > frameLeft+FRAME_WIDTH) {$('#gameframe')[0].scrollLeft = Math.min(frameLeft+2, XS*SCALE-FRAME_WIDTH);}
+        if(playerY+100 > frameTop+FRAME_HEIGHT) {$('#gameframe')[0].scrollTop = Math.min(frameTop+2, YS*SCALE-FRAME_HEIGHT);}
+    }
+
+    // Run all the setup
+    function setup() {
+        drawWorld();
+        $('#sky').width(XS*SCALE+'px');
+        $('#sky').height(props.rockLevel*SCALE+'px');
+        $('#cave').width(XS*SCALE+'px');
+        $('#cave').height((YS-props.caveLevel)*SCALE+'px');
+        $('#cave').css({top: props.caveLevel*SCALE+'px'});
+
+        let border = '';
+        if(GRID) {border = 'border: 1px solid #eeeeee; '}
+
+        $('#player').append(`<img id="playerImage" src = "sprites/rabbit-1.png" style="${border};visibility:hidden">`);
+        state = 'rest';
+        direction = 1;
+        hopCounter = 0;
+        drawPlayer();
+        $('#playerImage').css('visibility', 'visible');
+
+        setInterval(gameLoop, 10);
+
+        document.addEventListener('keydown', (event) => {
+            const key = event.key;
+            if(key == 'ArrowLeft') {arrowLeft = true;}
+            if(key == 'ArrowRight') {arrowRight = true;}
+            if(key == 'ArrowUp') {arrowUp = true;}
+            if(key == 'ArrowDown') {arrowDown = true;}
+        });
+        document.addEventListener('keyup', (event) => {
+            const key = event.key;
+            if(key == 'ArrowLeft') {arrowLeft = false;}
+            if(key == 'ArrowRight') {arrowRight = false;}
+            if(key == 'ArrowUp') {arrowUp = false;}
+            if(key == 'ArrowDown') {arrowDown = false;}
+        });
+
+        $('#gameframe').css('width', FRAME_WIDTH+'px');
+        $('#gameframe').css('max-width', FRAME_WIDTH+'px');
+        $('#gameframe').css('height', FRAME_HEIGHT+'px');
+        $('#gameframe').css('max-height', FRAME_HEIGHT+'px');
+    }
+
+    $(document).ready(setup);
+
+</script>
+
+</html>
