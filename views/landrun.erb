@@ -348,7 +348,7 @@
             if(txf.customClass) {classes.push(txf.customClass);}
             if(txf.id) {id = `id="${txf.id}" `;}
         }
-        $('#world').append(`<img ${id} src="sprites/${sprite}.png" class="${classes.join(' ')}" style="left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px;">`);
+        $('#world').append(`<img ${id} src="/images/landrun/${sprite}.png" class="${classes.join(' ')}" style="left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px;">`);
     }
 
     function checkCoinCollision() {
@@ -398,7 +398,7 @@
         if(state == 'rest') {variant = 0;}
         else if(state == 'hop' || state == 'hop-bounce' || state == 'jump' || state == 'jump-bounce' || state == 'fall' || state == 'adjust') {variant = 1;}
 
-        $('#playerImage')[0].src = `sprites/rabbit-${variant}.png`;
+        $('#playerImage')[0].src = `/images/landrun/rabbit-${variant}.png`;
         $('#playerImage').css({width: SCALE*props.playerVariants[variant].width});
         let playerWidth = $('#playerImage')[0].width;
         let playerHeight = $('#playerImage')[0].height;
@@ -559,7 +559,7 @@
         let border = '';
         if(GRID) {border = 'border: 1px solid #eeeeee; '}
 
-        $('#player').append(`<img id="playerImage" src = "sprites/rabbit-1.png" style="${border};visibility:hidden">`);
+        $('#player').append(`<img id="playerImage" src = "/images/landrun/rabbit-1.png" style="${border};visibility:hidden">`);
         state = 'rest';
         direction = 1;
         hopCounter = 0;
