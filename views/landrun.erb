@@ -5,16 +5,13 @@
 
     Backlog:
 
-    * Support the spring object
-	    * Collision test (player must be in falling mode)
-	    * Mechanics: fly player up, but allow the player to move left/right on its way up
     * Geyser
 	    * Turn on and off and animate
 	    * Collision test
 	    * In case of collision, player flies up into the air & dies
     * Editor
     * Screens
-	    * Intro screen
+	    * Intro screen with instructions
 	    * Choose character screen
 	    * Dead - try again
 	    * Well done - next level
@@ -118,6 +115,7 @@
 </head>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tsparticles/confetti@3.0.3/tsparticles.confetti.bundle.min.js"></script>
 
 <body>
 <div id="gameframe">
@@ -153,6 +151,31 @@
 
     const SCALE = 80;
     const GRID = false;
+    const H = 0.35;	        // how high the player hops when moving left/right
+    const SPEED = 1.0;      // player's speed
+    const MAX_WORLD_WIDTH_VISIBLE = 20;
+    const MAX_WORLD_HEIGHT_VISIBLE = 10;
+    const IMAGE_PATH = '/images/landrun';
+
+    const level = [
+        '                        ',
+        '           *            ',
+        '          *#            ',
+        '         *##            ',
+        '        *###T           ',
+        'S *    *####T           ',
+        'GGG   *#####T *         ',
+        'GGG   GGGGGGGPG    C   F',
+        'GGGGGGGGGGGGGGG   GG * G',
+        'GGGGGGGGGGGGGGGP  GG * G',
+        'GGGGGGGGGGGGGGGG*$G  * G',
+        'GGGGGGG * GGGGGGGGGPP*PG',
+        'GGGGGGG #  GGG  GGGGG*TG',
+        'GGGGGGG ##* GG  ******TG',
+        'GGGGGG *###* G GGGGGGGGG',
+        'GGGGF *#####*  GGGGGGGGG',
+        'GGGGGGGGGGGGGGGGGGGGGGGG'
+    ];
 
     const SPRITE_TRANSFORM = {};
     SPRITE_TRANSFORM['hay'] =  {left: -0.29, top: -0.29, right: 0.29, bottom: 0.29};
@@ -168,25 +191,6 @@
     SPRITE_TRANSFORM['ground-edge-straight'] = {left: -0.15, top: -0.25, right: -0.8, bottom: 0.25};
     SPRITE_TRANSFORM['wall'] = {left: -0.15, top: -0.15, right: 0.15, bottom: 0.15};
 
-    const level = [
-        '                        ',
-        '           *            ',
-        '          *#            ',
-        '         *##            ',
-        '        *###T           ',
-        'S *    *####T           ',
-        'GGG   *#####T *         ',
-        'GGG   GGGGGGGPG #  C   F',
-        'GGGGGGGGGGGGGGG   GG * G',
-        'GGGGGGGGGGGGGGG   GG * G',
-        'GGGGGGGGGGGGGGG* $G  * G',
-        'GGGGGGG * GGGGGGPGGPP*PG',
-        'GGGGGGG #  GGG  ******TG',
-        'GGGGGGG ##* GG GGGGGGGGG',
-        'GGGGGG *###* G GGGGGGGGG',
-        'GGGGF *#####*  GGGGGGGGG',
-        'GGGGGGGGGGGGGGGGGGGGGGGG'
-    ];
     const props = {
         caveLevel: 11,							// y coordinate when the cave background starts
         rockLevel: 5,							// y coordinate when the rock background starts
@@ -194,14 +198,12 @@
             {width: 1.1, offsetX: 0.5, offsetY: 0.3},	// offsetX: offset between left edge and center of gravity in % of SCALE
             {width: 0.7, offsetX: 0.5, offsetY: 0.5}]	// offsetY: offset between top edge and center of gravity in % of SCALE
     }
-    const H = 0.35;	// how high the player hops when moving left/right, as a function of SCALE
-
 
     const YS = level.length;
     const XS = level[0].length;
-    const SPEED = SCALE/40;
-    const FRAME_WIDTH = Math.min(window.innerWidth, 20*SCALE);
-    const FRAME_HEIGHT = Math.min(window.innerHeight, 10*SCALE);
+    const SPEED_CALC = SPEED*SCALE/40;
+    const FRAME_WIDTH = Math.min(window.innerWidth, MAX_WORLD_WIDTH_VISIBLE*SCALE);
+    const FRAME_HEIGHT = Math.min(window.innerHeight, MAX_WORLD_HEIGHT_VISIBLE*SCALE);
 
     let blocker = [];	// this 2d array defines all spaces which the player can't get through. first dimension = x, second = y
 
@@ -217,8 +219,10 @@
     let gameOn = true;	// should the game continue?
     let coins = [];		// coin collection
     let score = 0;		// coin score
+    let maxScore = 0;   // maximum possible score
     let finishes = [];	// all the finish portals
     let ponds = [];		// all the ponds
+    let springs = [];   // all the springs
 
     // input information
     let arrowLeft = false;
@@ -256,6 +260,7 @@
                 }
                 if(c == '$') {
                     draw('spring', x, y);
+                    springs.push({x: x, y: y});
                 }
                 if(c == 'S') {
                     draw('greenstar', x, y);
@@ -290,6 +295,9 @@
                         draw('ground-edge-curved', x, y);
                     }
                 }
+
+                // Maximum possible score
+                maxScore = coins.length*5;
 
                 // For debugging, show the grid
                 if(GRID) {
@@ -353,7 +361,49 @@
             if(txf.customClass) {classes.push(txf.customClass);}
             if(txf.id) {id = `id="${txf.id}" `;}
         }
-        $('#world').append(`<img ${id} src="/images/landrun/${sprite}.png" class="${classes.join(' ')}" style="left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px;">`);
+        $('#world').append(`<img ${id} src="${IMAGE_PATH}/${sprite}.png" class="${classes.join(' ')}" style="left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px;">`);
+    }
+
+    function throwConfetti() {
+        const count = 200,
+            defaults = {
+                origin: { y: 0.7 },
+            };
+
+        function fire(particleRatio, opts) {
+            confetti(
+                Object.assign({}, defaults, opts, {
+                    particleCount: Math.floor(count * particleRatio),
+                })
+            );
+        }
+
+        fire(0.25, {
+            spread: 26,
+            startVelocity: 55,
+        });
+
+        fire(0.2, {
+            spread: 60,
+        });
+
+        fire(0.35, {
+            spread: 100,
+            decay: 0.91,
+            scalar: 0.8,
+        });
+
+        fire(0.1, {
+            spread: 120,
+            startVelocity: 25,
+            decay: 0.92,
+            scalar: 1.2,
+        });
+
+        fire(0.1, {
+            spread: 120,
+            startVelocity: 45,
+        });
     }
 
     function checkCoinCollision() {
@@ -373,7 +423,8 @@
         for(let i=0; i<finishes.length; i += 1) {
             if(playerX >= (finishes[i].x+0.2)*SCALE && playerX <= (finishes[i].x+0.8)*SCALE && playerY >= (finishes[i].y+0.2)*SCALE && playerY <= (finishes[i].y+0.8)*SCALE) {
                 $('#popup').css({visibility: 'visible'});
-                $('#popup').html("CONGRATULATIONS!");
+                $('#popup').html(`<b>CONGRATULATIONS!</b><br><br>You scored ${score} out of ${maxScore} possible.<br><br><button onclick="location.reload()">Start again</button>`);
+                throwConfetti();
                 gameOn = false;
             }
         }
@@ -391,8 +442,18 @@
         }
         if(collisionFound) {
             $('#popup').css({visibility: 'visible'});
-            $('#popup').html("YOU ARE DEAD!");
+            $('#popup').html("YOU ARE DEAD!<br><br><button onclick=\"location.reload()\">Start again</button>");
             gameOn = false;
+        }
+    }
+
+    function checkSpringCollision() {
+        for(let i=0; i<springs.length; i += 1) {
+            if(playerX >= (springs[i].x+0.2)*SCALE && playerX <= (springs[i].x+0.8)*SCALE && playerY >= (springs[i].y+0.2)*SCALE && playerY <= (springs[i].y+0.8)*SCALE && state == 'fall') {
+                state = 'spring';
+                referenceY = playerY;
+                hopCounter = 0;
+            }
         }
     }
 
@@ -402,8 +463,9 @@
         let variant;
         if(state == 'rest') {variant = 0;}
         else if(state == 'hop' || state == 'hop-bounce' || state == 'jump' || state == 'jump-bounce' || state == 'fall' || state == 'adjust') {variant = 1;}
+        else if(state == 'spring') {variant = 2;}
 
-        $('#playerImage')[0].src = `/images/landrun/rabbit-${variant}.png`;
+        $('#playerImage')[0].src = `${IMAGE_PATH}/rabbit-${variant}.png`;
         $('#playerImage').css({width: SCALE*props.playerVariants[variant].width});
         let playerWidth = $('#playerImage')[0].width;
         let playerHeight = $('#playerImage')[0].height;
@@ -412,6 +474,7 @@
         checkCoinCollision();
         checkFinishCollision();
         checkPondAndAbyssCollision();
+        checkSpringCollision();
     }
 
     function isBlocked(deltaX, deltaY, microDeltaX = 0, microDeltaY = 0) {
@@ -476,19 +539,19 @@
             }
         }
         else if(state == 'hop') {
-            hopCounter += SPEED;
-            playerX += direction*SPEED;
+            hopCounter += SPEED_CALC;
+            playerX += direction*SPEED_CALC;
             playerY = referenceY - parabola(hopCounter);
             if(hopCounter >= SCALE) {
                 state = 'rest';
             }
         }
         else if(state == 'hop-bounce') {
-            hopCounter += SPEED;
+            hopCounter += SPEED_CALC;
             if(hopCounter <= SCALE/2) {
-                playerX += direction*SPEED;
+                playerX += direction*SPEED_CALC;
             } else {
-                playerX -= direction*SPEED;
+                playerX -= direction*SPEED_CALC;
             }
             playerY = referenceY - parabola(hopCounter);
             if(hopCounter >= SCALE) {
@@ -496,20 +559,20 @@
             }
         }
         else if(state == 'jump') {
-            hopCounter += SPEED;
-            playerX += direction*SPEED;
+            hopCounter += SPEED_CALC;
+            playerX += direction*SPEED_CALC;
             playerY = referenceY - parabola(hopCounter) - hopCounter;
             if(hopCounter >= SCALE) {
                 state = 'rest';
             }
         }
         else if(state == 'jump-bounce') {
-            hopCounter += SPEED;
+            hopCounter += SPEED_CALC;
             if(hopCounter < SCALE/2) {
-                playerX += direction*SPEED;
+                playerX += direction*SPEED_CALC;
                 playerY = referenceY - parabola(hopCounter) - hopCounter;
             } else {
-                playerX -= direction*SPEED;
+                playerX -= direction*SPEED_CALC;
                 playerY = referenceY - parabola(hopCounter) - (SCALE-hopCounter);
             }
             if(hopCounter >= SCALE) {
@@ -517,13 +580,13 @@
             }
         }
         else if(state == 'fall') {
-            hopCounter += SPEED;
-            if(arrowRight && !isBlocked(0, 0, SPEED, 0)) {
+            hopCounter += SPEED_CALC;
+            if(arrowRight && !isBlocked(0, 0, SPEED_CALC, 0)) {
                 direction = 1;
-                playerX += SPEED;
-            } else if(arrowLeft && !isBlocked(0, 0, -SPEED, 0)) {
+                playerX += SPEED_CALC;
+            } else if(arrowLeft && !isBlocked(0, 0, -SPEED_CALC, 0)) {
                 direction = -1;
-                playerX -= SPEED;
+                playerX -= SPEED_CALC;
             }
             playerY = referenceY + freefall(hopCounter);
             if(isBlocked(0, 0, 0, SCALE/2)) {
@@ -536,10 +599,24 @@
         }
         else if(state == 'adjust') {
             // to adjust the player's X position after a fall, we use the parabola but scale it down to 1/4
-            hopCounter += SPEED;
+            hopCounter += SPEED_CALC;
             playerX = (referenceX*(SCALE/4-hopCounter) + targetX*hopCounter) / (SCALE/4);
             playerY = referenceY - parabola(hopCounter*4)/4;
             if(hopCounter >= SCALE/4) {
+                state = 'rest';
+            }
+        }
+        else if(state == 'spring') {
+            hopCounter += SPEED_CALC;
+            if(arrowRight && !isBlocked(0, 0, SPEED_CALC, 0)) {
+                direction = 1;
+                playerX += SPEED_CALC;
+            } else if(arrowLeft && !isBlocked(0, 0, -SPEED_CALC, 0)) {
+                direction = -1;
+                playerX -= SPEED_CALC;
+            }
+            playerY = referenceY - parabola(hopCounter/2)*10;
+            if(hopCounter >= SCALE) {
                 state = 'rest';
             }
         }
@@ -564,7 +641,7 @@
         let border = '';
         if(GRID) {border = 'border: 1px solid #eeeeee; '}
 
-        $('#player').append(`<img id="playerImage" src = "/images/landrun/rabbit-1.png" style="${border};visibility:hidden">`);
+        $('#player').append(`<img id="playerImage" src = "${IMAGE_PATH}/rabbit-1.png" style="${border};visibility:hidden">`);
         state = 'rest';
         direction = 1;
         hopCounter = 0;
