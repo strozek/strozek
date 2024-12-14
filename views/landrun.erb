@@ -97,6 +97,11 @@
             -moz-animation:spin 4s linear infinite;
             animation:spin 4s linear infinite;
         }
+        .control {
+            position: absolute;
+            font-size: 40px;
+            cursor: pointer;
+        }
         @-moz-keyframes spin {
             100% { -moz-transform: rotate3d(0, 1, 0, 3.142rad); }
         }
@@ -124,9 +129,9 @@
 <div id="score">SCORE: 0</div>
 <div id="popup"></div>
 <div id="controls">
-    <div style="position: absolute; left: 10px; top: 55px; font-size: 40px; cursor: pointer;" onmousedown="arrowLeft = true;" onmouseup="arrowLeft = false;" ontouchstart="arrowLeft = true;" ontouchend="arrowLeft = false;">&lHar;</div>
-    <div style="position: absolute; left: 100px; top: 55px; font-size: 40px; cursor: pointer;" onmousedown="arrowRight = true;" onmouseup="arrowRight = false;" ontouchstart="arrowRight = true;" ontouchend="arrowRight = false;">&rHar;</div>
-    <div style="position: absolute; left: 55px; top: 10px; font-size: 40px; cursor: pointer;" onmousedown="arrowUp = true;" onmouseup="arrowUp = false;" ontouchstart="arrowUp = true;" ontouchend="arrowUp = false;">&uHar;</div>
+    <div class="control" style="left: 10px; top: 55px;" onmousedown="arrowLeft = true;" onmouseup="arrowLeft = false;" ontouchstart="arrowLeft = true;" ontouchend="arrowLeft = false;"  onbeforecopy="return false" ondragstart="return false" onselectstart="return false" oncontextmenu="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()">&lHar;</div>
+    <div class="control" style="left: 100px; top: 55px;" onmousedown="arrowRight = true;" onmouseup="arrowRight = false;" ontouchstart="arrowRight = true;" ontouchend="arrowRight = false;" onbeforecopy="return false" ondragstart="return false" onselectstart="return false" oncontextmenu="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()">&rHar;</div>
+    <div class="control" style="left: 55px; top: 10px;" onmousedown="arrowUp = true;" onmouseup="arrowUp = false;" ontouchstart="arrowUp = true;" ontouchend="arrowUp = false;"  onbeforecopy="return false" ondragstart="return false" onselectstart="return false" oncontextmenu="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()">&uHar;</div>
 </div>
 </body>
 
