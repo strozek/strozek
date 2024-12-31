@@ -5,148 +5,73 @@
 
     Backlog:
 
-    * Moving platform
-    * Screens
-	    * Intro screen with instructions
-	    * Choose character screen
-	    * Dead - try again
-	    * Well done - next level
-    * Other Gameplay basics
-	    * Drag the on-screen joystick to move
-        * Constrain camera movements (before the player gets to the cave)
-    * Multiple levels
-    * Post MVP
+    * Support variable speeds of ledges
+    * Support different positions and speeds of platforms
+    * "Buy" a shield with certain number of points (?)
+    * Timer (?)
+    * Choose character screen
+    * Drag the on-screen joystick to move
+    * Constrain camera movements (before the player gets to the cave)
+    * Worlds
+        * 1: Forest, 2: Jungle, 3: Underwater, 4: Icy tundra, 5: Desert
+    * Later
         * Draw the skinny walls
         * Editor
-        * Clouds
         * When collected, coins float up to the score
-        * Sounds (collecting coin, bubbles, spring, finish, death)
 -->
-
 <html>
 <head>
-    <title>Landrun</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-        }
-        #gameframe {
-            position: absolute;
-            overflow: hidden;
-        }
-        #sky {
-            background: rgb(118,110,255);
-            background: linear-gradient(180deg, rgba(118,110,255,1) 26%, rgba(124,162,228,1) 46%, rgba(79,210,230,1) 68%, rgba(213,239,247,1) 100%);
-            position: absolute;
-        }
-        #cave {
-            background: rgb(64,34,9);
-            background: linear-gradient(180deg, rgba(64,34,9,1) 9%, rgba(92,44,5,1) 26%, rgba(136,83,20,1) 68%, rgba(164,117,10,1) 88%, rgba(215,155,19,1) 97%);
-            position: absolute;
-        }
-        #player {
-            position: absolute;
-        }
-        #controls {
-            position: absolute;
-            right: 60px;
-            bottom: 50px;
-            width: 150px;
-            height: 150px;
-            border-radius: 75px;
-            background: #ffffff;
-            border: #000000 solid 1px;
-        }
-        #world {
-            position: absolute;
-        }
-        #score {
-            position: relative;
-            width: 300px;
-            height: 40px;
-            top: 0p;
-            left: 0px;
-            background: #ffffff;
-            border: 2px solid #888888;
-            text-align: center;
-            padding-top: 15px;
-        }
-        #popup {
-            position: absolute;
-            left: 0px;
-            top: 0px;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            visibility: hidden;
-            background: #eeeeff;
-            padding-top: 200px;
-        }
-        .sprite {
-            position: absolute;
-        }
-        .coin {
-            -webkit-animation:spin 4s linear infinite;
-            -moz-animation:spin 4s linear infinite;
-            animation:spin 4s linear infinite;
-        }
-        .hidden {
-            visibility: hidden;
-        }
-        .control {
-            position: absolute;
-            font-size: 40px;
-            cursor: pointer;
-        }
-        @-moz-keyframes spin {
-            100% { -moz-transform: rotate3d(0, 1, 0, 3.142rad); }
-        }
-        @-webkit-keyframes spin {
-            100% { -webkit-transform: rotate3d(0, 1, 0, 3.142rad); }
-        }
-        @keyframes spin {
-            100% {
-                -webkit-transform: rotate3d(0, 1, 0, 6.2832rad);
-                transform: rotate3d(0, 1, 0, 6.2832rad);
-            }
-        }
-    </style>
+  <title>Landrun</title>
+  <link rel="stylesheet" href="/css/landrun/landrun.css">
+  <link rel="stylesheet" href="/css/landrun/bubbles.css">
+  <link rel="stylesheet" href="/css/landrun/glass.css">
 </head>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tsparticles/confetti@3.0.3/tsparticles.confetti.bundle.min.js"></script>
+<script src="/js/jquery-1.9.1.js"></script>
+<script src="/js/confetti.min.js"></script>
 
 <body>
 <div id="gameframe">
-    <div id="sky"></div>
-    <div id="cave"></div>
-    <div id="world"></div>
-    <div id="player"></div>
+  <div id="sky"></div>
+  <div id="cave"></div>
+  <div id="world"></div>
+  <div id="player"></div>
 </div>
-<div id="score">SCORE: 0</div>
-<div id="popup"></div>
+<div class="stats">
+  <div class="statscolumn p40" id="score">SCORE: 0</div>
+  <div class="statscolumn p10">&nbsp;</div>
+  <div class="statscolumn p50">
+    <span id="health">
+      <div id="healthIndicator"></div>
+    </span>
+  </div>
+</div>
+<div id="popup" class="hidden"></div>
+<div id="popup2" class="hidden"></div>
+
 <div id="controls">
-    <div class="control" style="left: 10px; top: 55px;" onmousedown="arrowLeft = true;" onmouseup="arrowLeft = false;" ontouchstart="arrowLeft = true;" ontouchend="arrowLeft = false;"  onbeforecopy="return false" ondragstart="return false" onselectstart="return false" oncontextmenu="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()">&lHar;</div>
-    <div class="control" style="left: 100px; top: 55px;" onmousedown="arrowRight = true;" onmouseup="arrowRight = false;" ontouchstart="arrowRight = true;" ontouchend="arrowRight = false;" onbeforecopy="return false" ondragstart="return false" onselectstart="return false" oncontextmenu="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()">&rHar;</div>
-    <div class="control" style="left: 55px; top: 10px;" onmousedown="arrowUp = true;" onmouseup="arrowUp = false;" ontouchstart="arrowUp = true;" ontouchend="arrowUp = false;"  onbeforecopy="return false" ondragstart="return false" onselectstart="return false" oncontextmenu="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()">&uHar;</div>
+  <div class="control" style="left: 10px; top: 55px;" onmousedown="arrowLeft = true;" onmouseup="arrowLeft = false;" ontouchstart="arrowLeft = true;" ontouchend="arrowLeft = false;"  onbeforecopy="return false" ondragstart="return false" onselectstart="return false" oncontextmenu="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()">&lHar;</div>
+  <div class="control" style="left: 100px; top: 55px;" onmousedown="arrowRight = true;" onmouseup="arrowRight = false;" ontouchstart="arrowRight = true;" ontouchend="arrowRight = false;" onbeforecopy="return false" ondragstart="return false" onselectstart="return false" oncontextmenu="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()">&rHar;</div>
+  <div class="control" style="left: 55px; top: 10px;" onmousedown="arrowUp = true;" onmouseup="arrowUp = false;" ontouchstart="arrowUp = true;" ontouchend="arrowUp = false;"  onbeforecopy="return false" ondragstart="return false" onselectstart="return false" oncontextmenu="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()">&uHar;</div>
 </div>
 </body>
 
 <script>
 
-    /* map legend: 				movement state:
-        * = coin 					rest
-        # = hay 					hop
-        S = start 					hop-bounce
-        G = ground 					jump
-        P = pond 					jump-bounce
-        C = crossroads sign
-        F = finish
-        $ = spring
+    /* map legend: 				      movement state:
+        * = coin 					      rest
+        # = hay 					      hop
+        S = start 					    hop-bounce
+        G = ground 					    jump
+        P = pond 					      jump-bounce
+        C = crossroads sign     fall
+        F = finish              adjust
+        $ = spring              spring
         T = tree
-
-
+        E = geyser
+        L = platform
+        D = ledge (left point)
+        O = portal
     */
 
     const SCALE = 80;
@@ -156,26 +81,56 @@
     const GEYSER_SPEED = 1.0;               // geyser's speed
     const MAX_WORLD_WIDTH_VISIBLE = 20;
     const MAX_WORLD_HEIGHT_VISIBLE = 10;
+    const PLAYER = 'rabbit';
     const IMAGE_PATH = '/images/landrun';
+    const MEDIA_PATH = '/media/landrun';
 
-    const level = [
-        '                        ',
-        '           *            ',
-        '          *#            ',
-        '         *##            ',
-        '        *###            ',
-        'S *    *####           T',
-        'GGG   *##### E*        T',
-        'GGG   GGGGGGGGG    C   T',
-        'GGGGGGGGGGGGGGGP  GG * G',
-        'GGGGGGGGGGGGGGGG  GG * G',
-        'GGGGGGGGGGGGGGGG*$G  * G',
-        'GGGGGGG * GGGGGGGGGPP*PG',
-        'GGGGGGG #  GGG  GGGGG*TG',
-        'GGGGGGG ##* GG  ******TG',
-        'GGGGGG *###* G GGGGGGGGG',
-        'GGGGF *#####*  GGGGGGGGG',
-        'GGGGGGGGGGGGGGGGGGGGGGGG'
+    const LEVELS = [
+        {map: [
+                '                ',
+                '        *       ',
+                '        #       ',
+                'S      ##  C   F',
+                'GGGGGGGGGGGGG GG',
+                'GGGGGGGGGGGGG GG',
+                'GGGGGGGGGGGGG GG',
+                'GGGGGGGGGGGGGPGG'],
+         ledges: []},
+        {map: [
+            '                          ',
+            '             *            ',
+            '            *#            ',
+            '           *## LLLL       ',
+            '      GG  *###     *      ',
+            'S * D GG *####     *     T',
+            'GGG D GG*##### E   *  O  T',
+            'GGG D GGGGGGGGGGG    C   T',
+            'GGGGGGGGGGGGGGGGGP  GG * G',
+            'GGGGGGGGGGGGGGGGGG  GG * G',
+            'GGGGGGGGGGGGGGGGGG*$G  * G',
+            'GGGGGGGGG * GGGGGGGGGPP*PG',
+            'GGGGGGGGG #  GGG  GGGGG*TG',
+            'GGGGGGGGG ##* GG  ******TG',
+            'GGGGGGGG *###* G GGGGGGGGG',
+            'GGGGGGF *#####*  GGGGGGGGG',
+            'GGGGGGGGGGGGGGGGGGGGGGGGGG'],
+         ledges: [{counter: 0, speed: 1.0}, {counter: -SCALE*2.5, speed: 1.0}, {counter: -SCALE*5, speed: 1.0}]},
+        {map: [
+            '                           ********************* ',
+            '             GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG  ',
+            '  LLLLLLLLLLL                                    ',
+            '                                    *           *',
+            '                                                *',
+            '                                   $            *',
+            'G  D G LLLL                                    * ',
+            'GD   G    LLLL                   $             * ',
+            'G  D G       LLLL                              * ',
+            'GD   G          LLLL           $                *',
+            'G  D G                                          *',
+            'GD S G                       $                  *',
+            'GGGGGG      O         GGGGGGGGGGGGGGGGGGGGGGGGGGF'],
+         ledges: [{counter: 0, speed: 1.0}, {counter: -SCALE*2, speed: 1.0}, {counter: -SCALE*4, speed: 1.0},
+                  {counter: -SCALE*6, speed: 1.0}, {counter: -SCALE*8, speed: 1.0}, {counter: -SCALE*10, speed: 1.0}]}
     ];
 
     const SPRITE_TRANSFORM = {
@@ -186,7 +141,10 @@
         bluestar: {left: 0.2, top: 0, right: -0.2, bottom: 0},
         spring: {left: 0, top: 0.3, right: -0.2, bottom: 0.2},
         'geyser-base': {left: 0, top: 0.9, right: 0, bottom: 0.3},
+        platform: {left: 0, top: -0.1, right: 1.2, bottom: -0.2},
+        ledge: {left: -0.3, top:0.05, right: 1, bottom: -0.3},
         fork: {left: 0, top: 0, right: 0, bottom: 0.2},
+        portal: {left: 0, top: -0.6, right: 0, bottom: 0.6},
         'ground-inside': {left: -0.1, top: -0.15, right: 0.1, bottom: 0.15},
         'ground-flat': {left: -0.1, top: -0.25, right: 0.1, bottom: 0.15},
         'ground-edge-curved': {left: -0.15, top: -0.15, right: -0.8, bottom: 0.25},
@@ -202,37 +160,46 @@
             {width: 0.7, offsetX: 0.5, offsetY: 0.5}]	// offsetY: offset between top edge and center of gravity in % of SCALE
     }
 
-    const YS = level.length;
-    const XS = level[0].length;
+    let currentLevel = 0;
+    let map;        // the current level's map
+    let ys;         // the current level's height in tiles
+    let xs;         // the current level's width in tiles
+
     const SPEED_CALC = SPEED*SCALE/40;
     const FRAME_WIDTH = Math.min(window.innerWidth, MAX_WORLD_WIDTH_VISIBLE*SCALE);
     const FRAME_HEIGHT = Math.min(window.innerHeight, MAX_WORLD_HEIGHT_VISIBLE*SCALE);
     const GEYSER_TIMELINE = [[0.0, 'hide'], [3.0, 'low'], [3.15, 'medium'], [3.3, 'high-0'], [3.5, 'high-1'], [3.7, 'high-0'], [3.9, 'high-1'],
-                             [4.1, 'high-0'], [4.3, 'high-1'], [4.5, 'high-0'], [4.7, 'high-1'], [4.9, 'high-0'], [5.1, 'high-1'], [5.3, 'high-0'], [5.5, 'high-1'],
-                             [5.7, 'high-0'], [5.9, 'high-1'], [6.1, 'high-0'], [6.3, 'high-1'], [6.5, 'medium'], [6.65, 'low'], [6.8, 'loop']];
+        [4.1, 'high-0'], [4.3, 'high-1'], [4.5, 'high-0'], [4.7, 'high-1'], [4.9, 'high-0'], [5.1, 'high-1'], [5.3, 'high-0'], [5.5, 'high-1'],
+        [5.7, 'high-0'], [5.9, 'high-1'], [6.1, 'high-0'], [6.3, 'high-1'], [6.5, 'medium'], [6.65, 'low'], [6.8, 'loop']];
 
-    let blocker = [];	// this 2d array defines all spaces which the player can't get through. first dimension = x, second = y
+    let blocker;	            // this 2d array defines all spaces which the player can't get through. first dimension = x, second = y
 
     // the player's information
-    let playerX, playerY;		// player's center of gravity
-    let state;					// movement state
-    let direction;				// 1 if facing right, -1 if facing left
-    let hopCounter;				// counter for hops and jumps
-    let referenceY;				// player's Y position for reference in determining parabolas
-    let referenceX;				// used to adjust the player after falling
-    let referenceDirection;     // used to bounce the player
-    let targetX;				// player's X target position (player getting adjusted after falling)
-    let geyserCounter = 0;      // used to determine the geyser state
-    let geyserState = 0;        // the geyser state
+    let playerX, playerY;		  // player's center of gravity
+    let state;					      // movement state
+    let health = 5;           // player's health. If 0, the player is dead
+    let spawnLocation;        // where the player restarts from after hurting itself
+    let direction;				    // 1 if facing right, -1 if facing left
+    let hopCounter;				    // counter for hops and jumps
+    let referenceY;				    // player's Y position for reference in determining parabolas
+    let referenceX;				    // used to adjust the player after falling
+    let referenceDirection;   // used to bounce the player
+    let referencePlatform;    // if player is on a platform, which one
+    let targetX;				      // player's X target position (player getting adjusted after falling)
+    let geyserCounter;        // used to determine the geyser state
+    let geyserState;          // the geyser state
 
     let gameOn = true;	// should the game continue?
-    let coins = [];		// coin collection
-    let score = 0;		// coin score
-    let maxScore = 0;   // maximum possible score
-    let finishes = [];	// all the finish portals
-    let ponds = [];		// all the ponds
-    let springs = [];   // all the springs
-    let geysers = [];   // all the geysers
+    let coins;		      // coin collection
+    let score;		      // coin score
+    let maxScore;       // maximum possible score
+    let finishes;	      // all the finish portals
+    let ponds;		      // all the ponds
+    let springs;        // all the springs
+    let geysers;        // all the geysers
+    let platforms;      // all the platforms
+    let ledges;         // all the ledges, hydrated from LEVELS
+    let portals;        // all the portals
 
     // input information
     let arrowLeft = false;
@@ -240,26 +207,68 @@
     let arrowUp = false;
     let arrowDown = false;
 
+    // Return the map element at position (x, y), or null if we're out of bounds
+    function lookup(x, y) {
+        if(x<0 || y<0 || x>=xs || y>=ys) {
+            return null;
+        }
+        return map[y][x];
+    }
+
     // Draw the game world
     function drawWorld() {
+        map = LEVELS[currentLevel].map;
+        ys = map.length;
+        xs = map[0].length;
+        ledges = LEVELS[currentLevel].ledges;
+        blocker = [];
+        geyserCounter = 0;
+        geyserState = 0;
+        coins = [];
+        score = 0;
+        maxScore = 0;
+        finishes = [];
+        ponds = [];
+        springs = [];
+        geysers = [];
+        platforms = [];
+        portals = [];
+
+        $('#world').html('');   // erase the current world
 
         // initiate the blocker array
-        for(let x=0; x<XS; x += 1) {
+        for(let x=0; x<xs; x += 1) {
             blocker.push([]);
         }
 
         // draw the background wall
-        for(let y=YS-1; y>=0; y -= 1) {
-            for(let x=0; x<XS; x += 1) {
+        for(let y=ys-1; y>=0; y -= 1) {
+            for(let x=0; x<xs; x += 1) {
                 if(y>=props.rockLevel && y<props.caveLevel) {
                     draw('wall', x, y);
                 }
             }
         }
 
-        for(let y=YS-1; y>=0; y -= 1) {
-            for(let x=0; x<XS; x += 1) {
-                let c = level[y][x];
+        // draw the ledges first since they are behind the ground
+        let currentLedge = 0;
+        for(let y=ys-1; y>0; y -= 1) {
+            for(let x=0; x<xs; x += 1) {
+                if (map[y][x] == 'D') {
+                    draw('ledge', x, y, {id: `ledge-${currentLedge}`});
+                    ledges[currentLedge].x = x;
+                    ledges[currentLedge].y = y;
+                    if(ledges[currentLedge].fromLeft === undefined) {   // if not undefined, keep the setting; otherwise infer it from the map
+                        ledges[currentLedge].fromLeft = (lookup(x - 1, y) == 'G');
+                    }
+                    currentLedge += 1;
+                }
+            }
+        }
+
+        for(let y=ys-1; y>=0; y -= 1) {
+            for(let x=0; x<xs; x += 1) {
+                let c = map[y][x];
                 if(c == '#') {
                     draw('hay', x, y);
                     blocker[x][y] = true;
@@ -281,6 +290,11 @@
                     draw('greenstar', x, y);
                     playerX = SCALE*(0.5+x);
                     playerY = SCALE*(0.5+y);
+                    spawnLocation = {x: x, y: y};
+                }
+                if(c == 'O') {
+                    draw('portal', x, y, {customClass: 'portal'});
+                    portals.push({x: x, y: y});
                 }
                 if(c == 'F') {
                     draw('bluestar', x, y);
@@ -298,9 +312,7 @@
                     } else {
                         draw('ground-inside', x, y);
                     }
-                    if(c == 'G') {
-                        blocker[x][y] = true;
-                    }
+                    blocker[x][y] = true;
                 }
                 if(c != 'G' && c!= 'P' && lookup(x-1, y) == 'G' && y<props.caveLevel) {
                     if(lookup(x-1, y-1) == 'G') {
@@ -322,11 +334,11 @@
         }
 
         // Draw a scaled tree
-        for(let x=0; x<XS; x += 1) {
-            for(let y=0; y<YS; y += 1) {
-                if(level[y][x] == 'T') {
+        for(let x=0; x<xs; x += 1) {
+            for(let y=0; y<ys; y += 1) {
+                if(map[y][x] == 'T') {
                     let treeStart = y;
-                    while(y<YS && level[y][x] == 'T') {
+                    while(y<ys && map[y][x] == 'T') {
                         blocker[x][y] = true;
                         y += 1;
                     }
@@ -336,11 +348,11 @@
         }
 
         // Draw a scaled pond
-        for(let y=0; y<YS; y += 1) {
-            for(let x=0; x<XS; x += 1) {
-                if(level[y][x] == 'P') {
+        for(let y=0; y<ys; y += 1) {
+            for(let x=0; x<xs; x += 1) {
+                if(map[y][x] == 'P') {
                     let pondStart = x;
-                    while(x<XS && level[y][x] == 'P') {
+                    while(x<xs && map[y][x] == 'P') {
                         x += 1;
                     }
                     draw('pond', pondStart, y, {right: (x-pondStart)-1});
@@ -348,14 +360,33 @@
                 }
             }
         }
-    }
 
-    // Return the map element at position (x, y), or null if we're out of bounds
-    function lookup(x, y) {
-        if(x<0 || y<0 || x>=XS || y>=YS) {
-            return null;
+        // Initialize all platforms
+        for(let y=0; y<ys; y += 1) {
+            for(let x=0; x<xs; x += 1) {
+                if(map[y][x] == 'L') {
+                    let platformStart = x;
+                    while(x<xs && map[y][x] == 'L') {
+                        x += 1;
+                    }
+                    draw('platform', platformStart, y, {id: `platform-${platforms.length}`});
+                    platforms.push({x: platformStart, y: y, size: x-platformStart, left: (platformStart-0.1)*SCALE, direction: 1});
+                }
+            }
         }
-        return level[y][x];
+
+        // Draw the clouds
+        const cloudPositions = [{left: 4.5, top: 1}, {left: 12, top: 0.5}, {left: 19, top: 1.5}, {left: -0.5, top: 2}];
+        for(let position of cloudPositions) {
+            $('#world').append(`<img src="${IMAGE_PATH}/cloud.png" class="sprite" style="left: ${SCALE*position.left}px; top: ${SCALE*position.top}px; width: ${SCALE*2}px;">`);
+        }
+
+        // Set up the sky and the cave
+        $('#sky').width(xs*SCALE+'px');
+        $('#sky').height(props.rockLevel*SCALE+'px');
+        $('#cave').width(xs*SCALE+'px');
+        $('#cave').height((ys-props.caveLevel)*SCALE+'px');
+        $('#cave').css({top: props.caveLevel*SCALE+'px'});
     }
 
     // Draw a sprite in a grid position, with an optional custom transform
@@ -381,15 +412,15 @@
 
     function throwConfetti() {
         const count = 200,
-            defaults = {
-                origin: { y: 0.7 },
-            };
+          defaults = {
+              origin: { y: 0.7 },
+          };
 
         function fire(particleRatio, opts) {
             confetti(
-                Object.assign({}, defaults, opts, {
-                    particleCount: Math.floor(count * particleRatio),
-                })
+              Object.assign({}, defaults, opts, {
+                  particleCount: Math.floor(count * particleRatio),
+              })
             );
         }
 
@@ -421,13 +452,19 @@
         });
     }
 
+    // Return true if the player's center of mass is in the bounding box, scaled by SCALE
+    function collides(left, top, right, bottom) {
+        return (playerX >= left*SCALE && playerX <= right*SCALE && playerY >= top*SCALE && playerY <= bottom*SCALE);
+    }
+
     function checkCoinCollision() {
         for(let i=0; i<coins.length; i += 1) {
-            if(coins[i] && playerX >= (coins[i].x+0.25)*SCALE && playerX <= (coins[i].x+0.75)*SCALE && playerY >= (coins[i].y+0.25)*SCALE && playerY <= (coins[i].y+0.75)*SCALE) {
+            if(coins[i] && collides(coins[i].x+0.2, coins[i].y+0.2, coins[i].x+0.8, coins[i].y+0.8)) {
                 // got the coin!
                 $(`#coin${i}`).css({display: 'none'});
                 delete(coins[i]);
                 score += 5;
+                new Audio(`${MEDIA_PATH}/coinCollect.mp3`).play();
                 $('#score').html(`SCORE: ${score}`);
                 break;
             }
@@ -436,47 +473,151 @@
 
     function checkFinishCollision() {
         for(let i=0; i<finishes.length; i += 1) {
-            if(playerX >= (finishes[i].x+0.2)*SCALE && playerX <= (finishes[i].x+0.8)*SCALE && playerY >= (finishes[i].y+0.2)*SCALE && playerY <= (finishes[i].y+0.8)*SCALE) {
-                $('#popup').css({visibility: 'visible'});
-                $('#popup').html(`<b>CONGRATULATIONS!</b><br><br>You scored ${score} out of ${maxScore} possible.<br><br><button onclick="location.reload()">Start again</button>`);
+            if(collides(finishes[i].x+0.2, finishes[i].y+0.2, finishes[i].x+0.8, finishes[i].y+0.8)) {
+                $('#popup').addClass('congrats');
+                $('#popup').removeClass('hidden');
+                let nextAction;
+                if(currentLevel+1 >= LEVELS.length) {
+                    nextAction = '<button onclick="location.reload()">Restart game</button>';
+                } else {
+                    nextAction = '<button onclick="nextLevel()">Next level</button>';
+                }
+                $('#popup').html(`<b>CONGRATULATIONS!</b><br><br>You scored ${score} out of ${maxScore} possible.<br><br>${nextAction}`);
                 throwConfetti();
                 gameOn = false;
+                new Audio(`${MEDIA_PATH}/youWin.mp3`).play();
             }
         }
     }
 
-    function playerIsDead() {
-        $('#popup').css({visibility: 'visible'});
-        $('#popup').html("YOU ARE DEAD!<br><br><button onclick=\"location.reload()\">Start again</button>");
+    function nextLevel() {
+        currentLevel += 1;
+        drawWorld();
+        initPlayer();
+        $('#popup').removeClass('congrats');
+        showLevelSummary();
+    }
+
+    // The player hurt itself. If the player's health is 0, the player is dead
+    function playerIsHurt() {
+        health -= 1;
+        if (health == 0) {
+            playerIsDead();
+        } else {
+            new Audio(`${MEDIA_PATH}/ouch.mp3`).play();
+            gameOn = false; // temporarily disable the game loop
+            $('#popup').addClass('white');
+            $('#popup').addClass('fadeElement');
+            $('#popup').html('');
+            $('#popup').removeClass('hidden');
+            setTimeout(function() {
+                gameOn = true;  // re-enable the game loop
+                updateHealth();
+                playerX = spawnLocation.x * SCALE;
+                playerY = spawnLocation.y * SCALE;
+                state = 'rest';
+                direction = 1;
+                hopCounter = 0;
+                $('#popup').removeClass('fadeElement');
+                $('#popup').removeClass('white');
+                $('#popup').addClass('hidden');
+            }, 400);
+        }
+    }
+
+    function showIntroScreen() {
         gameOn = false;
+        $('#popup').addClass('intro');
+        $('#popup').html('<div class="popupRect">Welcome to landrun!<br><br>To move, use the up / left / right arrow keys or the on-screen buttons.<br><br>Make sure to watch out for ponds and geysers! If you\'re having trouble, click on the question mark button in the corner.<br><br><button onclick="showLevelSummary()">NEXT</button></div>');
+        $('#popup').removeClass('hidden');
+    }
+
+    function showLevelSummary() {
+        $('#popup').addClass('levelSummary');
+        $('#popup').removeClass('intro');
+        $('#popup').html(`<div class="popupRect">World 1<br><br>Level ${currentLevel+1}<br><br><br><br><button class="popupButton" onclick="hideLevelSummary()">PLAY</button></div>`);
+    }
+
+    function hideLevelSummary() {
+        $('#popup').addClass('hidden');
+        $('#popup').removeClass('levelSummary');
+        $('#popup').html('');
+        gameOn = true;
+    }
+
+    function showGlass() {
+        $('#popup').html('');
+        $('#popup').addClass('glass1');
+        $('#popup2').addClass('glass2');
+        $('#popup').removeClass('hidden');
+        $('#popup2').removeClass('hidden');
+    }
+
+    function hideGlass() {
+        $('#popup').addClass('hidden');
+        $('#popup2').addClass('hidden');
+        $('#popup').removeClass('glass1');
+        $('#popup2').removeClass('glass2');
+    }
+
+    // The player is dead, show the screen and play the sound
+    function playerIsDead() {
+        $('#popup').addClass('dead');
+        $('#popup').removeClass('hidden');
+        $('#popup').html("YOU DIED<br><br><button onclick=\"location.reload()\">Start again</button>");
+        for(let i=0; i<20; i += 1) {
+            $('#popup').after("<div class=\'bubble\'></div>");
+        }
+        gameOn = false;
+        new Audio(`${MEDIA_PATH}/sadTrombone.mp3`).play();
     }
 
     function checkPondAndAbyssCollision() {
         let collisionFound = false;
         for(let i=0; i<ponds.length; i += 1) {
-            if(playerX >= (ponds[i].x+0.2)*SCALE && playerX <= (ponds[i].x+ponds[i].size-0.2)*SCALE && playerY >= (ponds[i].y-0.2)*SCALE && playerY <= (ponds[i].y+0.4)*SCALE) {
+            if(collides(ponds[i].x+0.2, ponds[i].y-0.6, ponds[i].x+ponds[i].size-0.2, ponds[i].y+0.2)) {
                 collisionFound = true;
             }
         }
-        if(playerY > YS*SCALE) {
+        if(playerY > ys*SCALE) {
             collisionFound = true;
         }
         if(collisionFound) {
-            playerIsDead();
+            playerIsHurt();
         }
     }
 
     function checkSpringCollision() {
         for(let i=0; i<springs.length; i += 1) {
-            if(playerX >= (springs[i].x+0.2)*SCALE && playerX <= (springs[i].x+0.8)*SCALE && playerY >= (springs[i].y+0.2)*SCALE && playerY <= (springs[i].y+0.8)*SCALE && state == 'fall') {
+            if(collides(springs[i].x+0.2, springs[i].y+0.2, springs[i].x+0.8, springs[i].y+0.8) && state == 'fall') {
                 state = 'spring';
                 referenceY = playerY;
                 hopCounter = 0;
+                new Audio(`${MEDIA_PATH}/bounce.mp3`).play();
             }
         }
     }
 
-    // Draw the player sprite according to its current state
+    function checkPortalCollision() {
+        for(let i=0; i<portals.length; i += 1) {
+            if (collides(portals[i].x + 0.2, portals[i].y - 0.2, portals[i].x + 0.8, portals[i].y + 1.2)) {
+                gameOn = false; // temporarily disable the game loop
+                showGlass();
+                setTimeout(function () {
+                    playerX = (spawnLocation.x+0.5) * SCALE;
+                    playerY = 0;
+                    referenceY = 0;
+                    state = 'fall';
+                    direction = 1;
+                    hopCounter = 0;
+                    gameOn = true;  // re-enable the game loop
+                    hideGlass();
+                }, 2000);
+            }
+        }
+    }
+
+    // Draw the player sprite according to its current state, and check for collisions
     function drawPlayer() {
 
         let variant;
@@ -484,23 +625,44 @@
         else if(state == 'hop' || state == 'hop-bounce' || state == 'jump' || state == 'jump-bounce' || state == 'fall' || state == 'adjust') {variant = 1;}
         else if(state == 'spring') {variant = 2;}
 
-        $('#playerImage')[0].src = `${IMAGE_PATH}/rabbit-${variant}.png`;
+        $('#playerImage')[0].src = `${IMAGE_PATH}/${PLAYER}-${variant}.png`;
         $('#playerImage').css({width: SCALE*props.playerVariants[variant].width});
-        let playerWidth = $('#playerImage')[0].width;
-        let playerHeight = $('#playerImage')[0].height;
         $('#player').css({left: playerX-SCALE*props.playerVariants[variant].offsetX, top: playerY-SCALE*props.playerVariants[variant].offsetY, transform: 'scaleX(' + direction + ')'});
 
         checkCoinCollision();
         checkFinishCollision();
         checkPondAndAbyssCollision();
         checkSpringCollision();
+        checkPortalCollision();
     }
 
+    // return true if a specified location is blocked by a ground, hay, tree, a platform, or a ledge
     function isBlocked(deltaX, deltaY, microDeltaX = 0, microDeltaY = 0) {
         let testX = parseInt((playerX + microDeltaX)/SCALE) + deltaX;
         let testY = parseInt((playerY + microDeltaY)/SCALE) + deltaY;
-        if(testX<0 || testX>=XS || testY<0) {return true;}
-        if(testY>=YS) {return false;}
+        let testPreciseX = playerX + microDeltaX + deltaX*SCALE;
+        if(testX<0 || testX>=xs || testY<0) {return true;}
+        if(testY>=ys) {return false;}
+        for(let i=0; i < platforms.length; i += 1) {
+            if(testPreciseX >= platforms[i].left && testPreciseX <= platforms[i].left+2.0*SCALE && testY == platforms[i].y) {
+                referencePlatform = i;
+                return true;
+            }
+        }
+        for(let i=0; i < ledges.length; i += 1) {
+
+            let left = (ledges[i].x-0.3)*SCALE + ledgeCounterToPosition(ledges[i].counter, ledges[i].fromLeft);
+            let right = left+2*SCALE;
+            if(ledges[i].fromLeft) {
+                left = (ledges[i].x-0.3)*SCALE;
+            } else {
+                right = (ledges[i].x+2)*SCALE;
+            }
+            if(testPreciseX >= left && testPreciseX < right && testY == ledges[i].y) {
+                return true;
+            }
+        }
+        referencePlatform = null;
         return blocker[testX][testY];
     }
 
@@ -513,11 +675,13 @@
         return y;
     }
 
+    // return the vertical position for the player who is in freefall
+    // from 0 @ i=0 to max speed @ i=SCALE
     function freefall(i) {
         if(i < SCALE) {
             return ((i/SCALE)+0.25)*((i/SCALE)+0.25)*SCALE;
         } else {
-            return (i-SCALE)*2.5+SCALE*1.5; // TODO: Make this scalable
+            return (i-SCALE)*2.5+SCALE*1.5;
         }
     }
 
@@ -531,14 +695,28 @@
         return false;
     }
 
-    // return the amount by which to scroll the screen, as a function of how close the player's coordinate is to the edge
-    // delta is negative if the player is beyond the screen
-    function getScrollAmount(delta) {
-        if(delta<0) {return 8;}
-        if(delta<25) {return 6;}
-        if(delta<50) {return 4;}
-        if(delta<100) {return 2;}
-        return 0;
+    function setAdjustState() {
+        state = 'adjust';
+        referenceX = playerX;
+        playerY = Math.floor(playerY / SCALE) * SCALE + (SCALE / 2);
+        referenceY = playerY;
+        targetX = Math.round(playerX/SCALE-0.5)*SCALE+(SCALE/2);
+        hopCounter = 0;
+    }
+
+    // return the X position that the player should be at if at rest. On the ground it should be the middle of the cell.
+    // On a platform we don't need to adjust
+    function needsAdjustment() {
+        if(referencePlatform !== null) {
+            return false;
+        } else {
+            let desiredX = Math.round(playerX/SCALE-0.5)*SCALE+(SCALE/2);
+            if(Math.abs(desiredX - playerX)<=2) {
+                playerX = desiredX;
+                return false;
+            }
+            return (desiredX != playerX);
+        }
     }
 
     // animate all the geysers
@@ -571,9 +749,53 @@
                 $(id).css({width: `${geyserProps.width}px`, height: `${geyserProps.height}px`, left: `${geyserProps.left}px`, top: `${geyserProps.top}px`});
                 // check collision
                 if(geyserProps.collisionCheck && playerX >= geyserProps.left && playerX <= geyserProps.left + geyserProps.width && playerY >= geyserProps.top && playerY <= geyserProps.top + geyserProps.height) {
-                    playerIsDead();
+                    playerIsHurt();
                 }
             }
+        }
+    }
+
+    // update the health indicator
+    function updateHealth() {
+        const healthMap = {5: 93, 4: 70, 3: 48, 2: 26, 1: 3, 0: null};
+        $('#healthIndicator').css({left: healthMap[health]});
+    }
+
+    // return the ledge position as a function of counter and whether ledge is appearing from the left
+    function ledgeCounterToPosition(counter, fromLeft) {
+        let c = counter % (SCALE*6);
+        if(fromLeft) {
+            if (c < SCALE * 2) return (-2 * SCALE);                         // hidden
+            if (c < SCALE * 3) return (-2 * SCALE + (c - SCALE * 2) * 2);   // appearing from left
+            if (c < SCALE * 5) return 0;                                    // fully shown
+            return ((5 * SCALE - c) * 2);                                   // retracting to the left
+        } else {
+            if (c < SCALE * 2) return (2.2 * SCALE);                        // hidden
+            if (c < SCALE * 3) return (2.2 * SCALE - (c - SCALE * 2) * 2);  // appearing from right
+            if (c < SCALE * 5) return 0.2 * SCALE;                          // fully shown
+            return ((c - 5 * SCALE) * 2 + 0.2 * SCALE);                     // retracting to the right
+        }
+    }
+
+    // Scroll the screen if the player is too close to the edge
+    function handleScreenScroll() {
+        let frameLeft = $('#gameframe')[0].scrollLeft;
+        let frameTop = $('#gameframe')[0].scrollTop;
+        if (playerX - 300 < frameLeft) {
+            let scrollAmount = playerX - 300;
+            $('#gameframe')[0].scrollLeft = Math.max(scrollAmount, 0);
+        }
+        if (playerY - 200 < frameTop) {
+            let scrollAmount = playerY - 200;
+            $('#gameframe')[0].scrollTop = Math.max(scrollAmount, 0);
+        }
+        if (playerX + 400 > frameLeft + FRAME_WIDTH) {
+            let scrollAmount = playerX + 400 - FRAME_WIDTH;
+            $('#gameframe')[0].scrollLeft = Math.min(scrollAmount, xs * SCALE - FRAME_WIDTH);
+        }
+        if (playerY + 200 > frameTop + FRAME_HEIGHT) {
+            let scrollAmount = playerY + 200 - FRAME_HEIGHT;
+            $('#gameframe')[0].scrollTop = Math.min(scrollAmount, ys * SCALE - FRAME_HEIGHT);
         }
     }
 
@@ -584,7 +806,9 @@
         }
         if(state == 'rest') {
             if(!checkIfFall()) {
-                if(arrowRight || arrowLeft) {
+                if(needsAdjustment()) {
+                    setAdjustState();
+                } else if(arrowRight || arrowLeft) {
                     direction = arrowRight ? 1 : -1;
                     if(!isBlocked(direction, 0)) {
                         state = 'hop';
@@ -612,6 +836,9 @@
             playerY = referenceY - parabola(hopCounter);
             if(hopCounter >= SCALE) {
                 state = 'rest';
+                hopCounter = 0;
+                playerX = Math.round(playerX);
+                playerY = referenceY;
             }
         }
         else if(state == 'hop-bounce') {
@@ -625,6 +852,9 @@
             playerY = referenceY - parabola(hopCounter);
             if(hopCounter >= SCALE) {
                 state = 'rest';
+                hopCounter = 0;
+                playerX = Math.round(playerX);
+                playerY = referenceY;
             }
         }
         else if(state == 'jump') {
@@ -633,6 +863,8 @@
             playerY = referenceY - parabola(hopCounter) - hopCounter;
             if(hopCounter >= SCALE) {
                 state = 'rest';
+                hopCounter = 0;
+                playerX = Math.round(playerX);
             }
         }
         else if(state == 'jump-bounce') {
@@ -647,6 +879,8 @@
             }
             if(hopCounter >= SCALE) {
                 state = 'rest';
+                hopCounter = 0;
+                playerX = Math.round(playerX);
             }
         }
         else if(state == 'fall') {
@@ -660,10 +894,8 @@
             }
             playerY = referenceY + freefall(hopCounter);
             if(isBlocked(0, 0, 0, SCALE/2)) {
-                state = 'adjust';
-                referenceX = playerX;
-                referenceY = playerY;
-                targetX = Math.round(playerX/SCALE-0.5)*SCALE+(SCALE/2);
+                state = 'rest';
+                playerX = Math.round(playerX);
                 hopCounter = 0;
             }
         }
@@ -674,6 +906,9 @@
             playerY = referenceY - parabola(hopCounter*4)/4;
             if(hopCounter >= SCALE/4) {
                 state = 'rest';
+                playerX = Math.round(playerX);
+                playerY = referenceY;
+                hopCounter = 0;
             }
         }
         else if(state == 'spring') {
@@ -688,9 +923,10 @@
             playerY = referenceY - parabola(hopCounter/2)*10;
             if(hopCounter >= SCALE) {
                 state = 'rest';
+                playerX = Math.round(playerX);
+                hopCounter = 0;
             }
         }
-        drawPlayer();
 
         // Handle the geysers
         geyserCounter += 1;
@@ -704,45 +940,70 @@
             updateGeysers();
         }
 
-        // Scroll the screen if the player is too close to the edge
-        let frameLeft = $('#gameframe')[0].scrollLeft;
-        let frameTop = $('#gameframe')[0].scrollTop;
-        if (playerX - 200 < frameLeft) {
-            let scrollAmount = getScrollAmount(2*(playerX - frameLeft));
-            $('#gameframe')[0].scrollLeft = Math.max(frameLeft - scrollAmount, 0);
+        // Move all platforms
+        for(let i=0; i < platforms.length; i += 1) {
+            if(platforms[i].direction == 1 && platforms[i].left + 1 >= (platforms[i].x + platforms[i].size - 2.1)*SCALE) {
+                platforms[i].direction = -1;
+            } else if(platforms[i].direction == -1 && platforms[i].left - 1 < (platforms[i].x - 0.1)*SCALE) {
+                platforms[i].direction = 1;
+            }
+            platforms[i].left += platforms[i].direction;
+            if(referencePlatform == i) {
+                playerX += platforms[i].direction;
+            }
+            $(`#platform-${i}`).css({left: `${platforms[i].left}px`});
         }
-        if (playerY - 100 < frameTop) {
-            let scrollAmount = getScrollAmount(playerY - frameTop);
-            $('#gameframe')[0].scrollTop = Math.max(frameTop - scrollAmount, 0);
+
+        // Move all ledges
+        for(let i=0; i < ledges.length; i += 1) {
+            let left = (ledges[i].x-0.3)*SCALE;
+            let position = ledgeCounterToPosition(ledges[i].counter, ledges[i].fromLeft);
+            $(`#ledge-${i}`).css({left: left+position});
+            if(ledges[i].fromLeft) {
+                let crop = -position+SCALE*0.3;
+                $(`#ledge-${i}`).css({clipPath: `inset(0px 0px 0px ${crop}px)`});
+            } else {
+                let crop = position;
+                $(`#ledge-${i}`).css({clipPath: `inset(0px ${crop}px 0px 0px)`});
+            }
+            ledges[i].counter += 1;
         }
-        if (playerX + 200 > frameLeft + FRAME_WIDTH) {
-            let scrollAmount = getScrollAmount(2*(frameLeft + FRAME_WIDTH - playerX));
-            $('#gameframe')[0].scrollLeft = Math.min(frameLeft + scrollAmount, XS * SCALE - FRAME_WIDTH);
-        }
-        if (playerY + 100 > frameTop + FRAME_HEIGHT) {
-            let scrollAmount = getScrollAmount(frameTop + FRAME_HEIGHT - playerY);
-            $('#gameframe')[0].scrollTop = Math.min(frameTop + scrollAmount, YS * SCALE - FRAME_HEIGHT);
-        }
+
+        drawPlayer();
+
+        handleScreenScroll();
+    }
+
+    // Initialize the player at rest, update the health
+    function initPlayer() {
+        state = 'rest';
+        direction = 1;
+        hopCounter = 0;
+        referencePlatform = null;
+        drawPlayer();
+        $('#playerImage').removeClass('hidden');
+        updateHealth();
+    }
+
+    function CHEAT(newLevel) {
+        currentLevel = newLevel;
+        $('#popup').addClass('hidden');
+        drawWorld();
+        initPlayer();
+        gameOn = true;
     }
 
     // Run all the setup
     function setup() {
+
+        // Initialized and draw the current map
         drawWorld();
-        $('#sky').width(XS*SCALE+'px');
-        $('#sky').height(props.rockLevel*SCALE+'px');
-        $('#cave').width(XS*SCALE+'px');
-        $('#cave').height((YS-props.caveLevel)*SCALE+'px');
-        $('#cave').css({top: props.caveLevel*SCALE+'px'});
 
         let border = '';
-        if(GRID) {border = 'border: 1px solid #eeeeee; '}
+        if(GRID) {border = 'style="border: 1px solid #eeeeee;"'}
+        $('#player').append(`<img id="playerImage" src = "${IMAGE_PATH}/${PLAYER}-1.png" class="hidden" ${border}>`);
 
-        $('#player').append(`<img id="playerImage" src = "${IMAGE_PATH}/rabbit-1.png" style="${border};visibility:hidden">`);
-        state = 'rest';
-        direction = 1;
-        hopCounter = 0;
-        drawPlayer();
-        $('#playerImage').css('visibility', 'visible');
+        initPlayer();
 
         setInterval(gameLoop, 10);
 
@@ -765,6 +1026,8 @@
         $('#gameframe').css('max-width', FRAME_WIDTH+'px');
         $('#gameframe').css('height', FRAME_HEIGHT+'px');
         $('#gameframe').css('max-height', FRAME_HEIGHT+'px');
+
+        showIntroScreen();
     }
 
     $(document).ready(setup);
