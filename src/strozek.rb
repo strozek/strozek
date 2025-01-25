@@ -109,25 +109,29 @@ class Strozek < Sinatra::Base
 		erb :loveandmath
 	end
 
-  get '/panda' do
-    erb :panda
-  end
+	get '/panda' do
+		erb :panda
+	end
 
-  get '/mazeandgirl' do
-    erb :mazeandgirl
-  end
+	get '/mazeandgirl' do
+		erb :mazeandgirl
+	end
 
-  get '/logo' do
-    erb :logo
-  end
+	get '/logo' do
+		erb :logo
+	end
 
-  get '/money' do
-    erb :money
-  end
+	get '/money' do
+		erb :money
+	end
 
-  get '/landrun' do
-    erb :landrun
-  end
+	get '/landrun' do
+		erb :landrun
+	end
+
+	get '/musicnotepad' do
+		erb :musicnotepad
+	end
 
 	run! if (app_file == $0)
 end

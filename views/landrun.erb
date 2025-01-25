@@ -5,23 +5,23 @@
 
     Backlog:
 
+    * Timer & "Buy" a shield with certain number of points (need design)
+    * At the end of a world, do another screen with total coins
+    * Draw the skinny walls
     * Support variable speeds of ledges
     * Support different positions and speeds of platforms
-    * "Buy" a shield with certain number of points (?)
-    * Timer (?)
-    * Choose character screen
     * Drag the on-screen joystick to move
     * Constrain camera movements (before the player gets to the cave)
-    * Worlds
-        * 1: Forest, 2: Jungle, 3: Underwater, 4: Icy tundra, 5: Desert
-    * Later
-        * Draw the skinny walls
-        * Editor
-        * When collected, coins float up to the score
+    * New Worlds (2: Jungle, 3: Underwater, 4: Icy tundra, 5: Desert)
+    * When collected, coins float up to the score
+
 -->
 <html>
 <head>
   <title>Landrun</title>
+  <link rel='shortcut icon' type='image/ico' href='/images/landrun/icon.png' />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="/css/landrun/landrun.css">
   <link rel="stylesheet" href="/css/landrun/bubbles.css">
   <link rel="stylesheet" href="/css/landrun/glass.css">
@@ -53,6 +53,27 @@
   <div class="control" style="left: 10px; top: 55px;" onmousedown="arrowLeft = true;" onmouseup="arrowLeft = false;" ontouchstart="arrowLeft = true;" ontouchend="arrowLeft = false;"  onbeforecopy="return false" ondragstart="return false" onselectstart="return false" oncontextmenu="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()">&lHar;</div>
   <div class="control" style="left: 100px; top: 55px;" onmousedown="arrowRight = true;" onmouseup="arrowRight = false;" ontouchstart="arrowRight = true;" ontouchend="arrowRight = false;" onbeforecopy="return false" ondragstart="return false" onselectstart="return false" oncontextmenu="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()">&rHar;</div>
   <div class="control" style="left: 55px; top: 10px;" onmousedown="arrowUp = true;" onmouseup="arrowUp = false;" ontouchstart="arrowUp = true;" ontouchend="arrowUp = false;"  onbeforecopy="return false" ondragstart="return false" onselectstart="return false" oncontextmenu="return false" onselect="document.selection.empty()" oncopy="document.selection.empty()">&uHar;</div>
+</div>
+<div id="question">
+    <img id="questionImage" src="/images/landrun/question-mark.png" onclick="toggleHelp()">
+</div>
+<div id="help" class="hidden">
+    <b>Geyser</b>: When you touch it, you die, unless the geyser is not displayed. If you go on the moving platform and it's in the geyser's way, you die.<br>
+    <br>
+    <b>Moving platform</b>: To jump onto the moving platform, wait until the geyser is not displayed, then click the up arrow, and then the right arrow. Remember to do it fast so you don't fall into the geyser.<br>
+    <br>
+    <b>Pond</b>: When you fall into it, you lose health. If you are on your last health, you die.<br>
+    <br>
+    <b>Portal</b>: When you go into the portal, it will zap you back out to the top of screen at the beginning. In Level 3, when you go through the portal, you will fall from the top of the screen. There is a moving platform and you should time going into the portal so you fall onto the moving platform.<br>
+    <br>
+    <b>Coins</b>: When you collect a coin, you get 5 points.<br>
+    <br>
+    <b>Ledges</b>: When trying to get onto another ledge, try rebounding off the wall and you'll end up facing the other direction so you can jump onto the next ledge. If you are in Level 2, on the last ledge, turn around and instead of rebounding, you jump. In Level 3, on the second-to-last ledge, turn around and jump over to the last ledge and go on to the ground.<br>
+    <br>
+    <b>Spring</b>: When you're on the spring, you will bounce automatically. If you don't move, you'll keep bouncing on the spring. To get off the spring, click the left or right arrow.<br>
+    <br>
+    <br>
+    I hope you found this helpful! To keep playing, press the question mark again.
 </div>
 </body>
 
@@ -87,14 +108,14 @@
 
     const LEVELS = [
         {map: [
-                '                ',
-                '        *       ',
-                '        #       ',
-                'S      ##  C   F',
-                'GGGGGGGGGGGGG GG',
-                'GGGGGGGGGGGGG GG',
-                'GGGGGGGGGGGGG GG',
-                'GGGGGGGGGGGGGPGG'],
+                '                      ',
+                '        *     *       ',
+                '        #     #       ',
+                'S      ##    ##  C   F',
+                'GGGGGGGGGG GGGGGGGG GG',
+                'GGGGGGGGGG GGGGGGGG GG',
+                'GGGGGGGGGG GGGGGGGG GG',
+                'GGGGGGGGGGPGGGGGGGGPGG'],
          ledges: []},
         {map: [
             '                          ',
@@ -558,6 +579,11 @@
         $('#popup2').addClass('hidden');
         $('#popup').removeClass('glass1');
         $('#popup2').removeClass('glass2');
+    }
+
+    // Toggle the help screen on and off
+    function toggleHelp() {
+        $('#help').toggleClass('hidden');
     }
 
     // The player is dead, show the screen and play the sound

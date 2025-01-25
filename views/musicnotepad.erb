@@ -1,0 +1,788 @@
+<html>
+<head>
+	<title>Music Notepad</title>
+	<link rel="icon" type="image/x-icon" href="/images/musicnotepad_favicon.png">
+	<style>
+		body {
+			margin-bottom: 0;
+		}
+		hr {
+			border: 0.5px solid #d4d4d4;
+			margin: 0;
+		}
+		kbd {
+			display: inline-block;
+    		border: 1px solid #ccc;
+    		border-radius: 4px;
+    		padding: 0.1em 0.5em;
+    		margin: 0 0.2em;
+    		box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 0 0 2px #fff inset;
+    		background-color: #f7f7f7;
+    		color: #000000;
+    		height: 1.3em;
+    		font-weight: bold;			
+		}
+		#grid {
+		}
+		.box-row {
+			height: 95px;
+		}
+		.box {
+			width: 125px;
+		}
+		.box-inside {
+			background: #fafafa;
+			height: 63px;
+			padding: 0px;
+			border: 2px solid #ffffff;
+		}
+		.note-seq {
+			width: 26px;
+			display: inline-block;
+		}
+		.note-join {
+			color: #c051ea;
+		}
+		.box-hand {
+			width: 104px;
+			height: 19px;
+			padding: 6px 8px 6px 8px;
+			cursor: pointer;
+		}
+		.oct-2 {
+			border-bottom: 3px double;
+		}
+		.oct-1 {
+			border-bottom: 1px solid;
+		}
+		.oct1 {
+			border-top: 1px solid;
+		}
+		.oct2 {
+			border-top: 3px double;
+		}
+		.chord {
+			font-weight: bold;
+			color: #0077bb;
+		}
+		.gray {
+			color: #cccccc !important;
+		}
+		.modifier {
+			color: #FFAF00;
+		}
+		.null {
+			color: #cccccc;
+		}
+		.arp-box {
+			position: absolute;
+			font-size: 80%;
+			color: #37AD5E;
+		}
+		.arp {
+			position: relative;
+		}
+		.sharp {
+			font-size: 62%;
+			vertical-align: top;
+		}
+		.selected {
+			border: 2px solid #73C2FB;
+		}
+		.selected-bg {
+			background: #d8ecfa;
+		}
+		.right-spaced {
+			text-align: right;
+			padding-right: 12px;
+		}
+		.legend {
+			padding-right: 8px;
+			position: absolute;
+			background: #f7f7f7;
+			right: 0px;
+			top: 0px;
+			border: 1px solid #bbbbbb;
+			border-radius: 8px;
+			border-top-right-radius: 0px;
+			border-bottom-right-radius: 0px;
+			padding: 14px;
+			cursor: pointer;
+		}
+		.legend-cell {
+			width: 150px;
+		}
+		.hide {
+			display: none;
+		}
+		.comment {
+			width: 125px;
+			border: 0;
+			font-size: 12px;
+			font-style: italic;
+			color: #aaaaaa;			
+		}
+		.piano {
+			padding-bottom: 8px;
+			position: -webkit-sticky;
+		    position: sticky;
+			background: #f7f7f7;
+			bottom: 0px;
+			width: 990px;
+			height: 160px;
+			border: 1px solid #bbbbbb;
+			border-radius: 8px;
+			border-bottom-left-radius: 0px;
+			border-bottom-right-radius: 0px;
+			padding: 14px;
+			cursor: pointer;
+			font-size: 85%;
+		}
+		.vk_selected {
+			background: #ddddff;
+		}
+		.vk_button {
+			position: absolute;
+			width: 30px;
+			padding: 5px;
+			border:1px solid #777777;
+			text-align: center;
+		}
+	</style>
+	<script src="/js/jquery-1.9.1.js"></script>
+	<script src="/js/musicnotepad.js"></script>
+</head>
+<body>
+	<div id="legend0" class="legend hide" onclick="toggle_legend()">
+		<b>LEGEND</b><br><br>
+		<table>
+			<tr><td class="right-spaced"><kbd>/</kbd></td><td><span class="chord">A</span></td><td class="legend-cell">chord (see below)</td></tr>
+			<tr><td class="right-spaced"><kbd>,</kbd></td><td><span class="note-join">ACE</span></td><td>play notes together</td></tr>
+			<tr><td class="right-spaced"><kbd>,</kbd></td><td><span>A &nbsp;C &nbsp;E</span></td><td>sequence of notes</td></tr>
+			<tr><td class="right-spaced"><kbd>.</kbd></td><td><span class="modifier">•</span></td><td>shorten last note</td></tr>
+			<tr><td class="right-spaced"><kbd>></kbd></td><td><span class="modifier">&#10095;</span></td><td>prolong last note</td></tr>
+			<tr><td class="right-spaced"><kbd>space</kbd></td><td><span class="null">–</span></td><td>pause</td></tr>
+			<tr><td class="right-spaced"><kbd>–</kbd>/<kbd>+</kbd></td><td><span class="oct-2">A</span> <span class="oct-1">A</span> A <span class="oct1">A</span> <span class="oct2">A</span> &nbsp;</td><td>octaves –2 &hellip; 2</td></tr>
+			<tr><td class="right-spaced"><kbd>⌥</kbd> + <kbd>0</kbd>&hellip;<kbd>9</kbd></td><td><span class="arp-box"><span class="arp" style="top:-8px;">•</span><span class="arp" style="top:-4px;">•</span><span class="arp" style="top:0px;">•</span><span class="arp" style="top:-4px;">•</span></span></td><td>arpeggio</td></tr>
+			<tr><td class="right-spaced"><kbd>⌥</kbd> + <kbd>⌫</kbd></td><td></td><td>clear arpeggio</td></tr>
+			<tr><td class="right-spaced"><kbd>@</kbd></td><td><i>Comment</i></td><td>text comment</td></tr>
+			<tr><td class="right-spaced"><kbd>⌥</kbd> + <kbd>enter</kbd></td><td></td><td>insert blank row</td></tr>
+			<tr><td class="right-spaced"><kbd>⌥</kbd> + <kbd>–</kbd></td><td></td><td>delete row</td></tr>
+			<tr><td class="right-spaced"><kbd>⌥</kbd> + <kbd>&#8593;</kbd>/<kbd>&#8595;</kbd></td><td></td><td>shift row up/down</td></tr>
+			<tr><td class="right-spaced"><kbd>⌥</kbd> + <kbd>space</kbd></td><td></td><td>insert blank cell, shift right</td></tr>
+			<tr><td class="right-spaced"><kbd>⌥</kbd> + <kbd>delete</kbd></td><td></td><td>delete cell, shift left</td></tr>
+			<tr><td></td><td>&nbsp;</td><td></td></tr>
+		</table>
+		<table style="margin-left:60px;">
+			<tr><td><span class="chord">A</span></td><td>major chord 0-4-7</td></tr>
+			<tr><td><span class="chord">Am</span></td><td>minor chord 0-3-7</td></tr>
+			<tr><td><span class="chord">Amm</span></td><td>0-2-7 chord</td></tr>
+			<tr><td><span class="chord">As</span></td><td>0-5-7 chord</td></tr>
+			<tr><td><span class="chord">A+2 &hellip; A+5</span> &nbsp;</td><td>0-4-7-9 &hellip; 0-4-7-12</td></tr>
+			<tr><td><span class="chord">A*</span></td><td>4-7-12 up-transpose</td></tr>
+			<tr><td><span class="chord">*A</span></td><td>(-5)-0-4 down-transpose</td></tr>
+		</table>
+	</div>
+	<div id="legend1" class="legend" onclick="toggle_legend()"></div>
+	<table cellpadding="0" cellspacing="0" id="grid">
+	</table>
+	<div id="piano1" class="piano hide" onclick="toggle_piano()">
+	</div>
+	<div id="piano0" class="piano" onclick="toggle_piano()">
+	</div>
+</body>
+<script>
+
+	/* `score` object syntax:
+
+		[[col0_row0, col1_row0, col2_row0, ...], [col0_row1, col1_row1, ...], ...]
+
+		each `col*_row*` item is a hash:
+			{     right: right hand notes
+		     right_type: type of notes to play on the right hand
+			  right_arp: (optional) right arpeggio
+			       left: left hand notes
+			  left_type: type of notes to play on the left hand
+			   left_arp: (optional) left arpeggio
+			    comment: the comment at the top
+			}
+
+			where:
+			- right, left: array of notes. each note is itself a hash:
+				{   key: key or chord or null for no key (used in "seq")
+					oct: octave if not 0. "key" must be present
+					mod: modifier ("long", "short"). "key" and "oct" must not be present
+				}
+			- *_type: 	"join" (play notes together),
+						"seq" (play notes sequentially),
+						"chord" (named chord - just one note in the array)
+			- *_arp: array of numbers corresponding to pitch, e.g. [0, 1, 2, 1, 2, 1, 2, 1]
+	*/
+
+	let score = [];
+	let storage_score = localStorage.getItem('score');
+	if(storage_score) {
+		score = JSON.parse(storage_score);
+	} else {
+		score = default_score;
+	}
+
+	let COLUMNS = 8;		// number of columns on the page
+	let ROWS;				// number of rows on the page
+	if (score.length) {
+		ROWS = score.length;
+	} else {
+		ROWS = 20;
+	}
+
+	let selected = {x: 0, y: 0, h: 'right'};	// currently selected cell and hand
+	let last_selected = null;					// data of previously selected cell/hand to deselect on move
+	let legend = 0;								// the current shown legend window (0 = actual legend, 1 = legend tab)
+	let comment_mode = false;					// if true, we're entering a comment above the box
+
+	$(document).ready(function() {
+		draw_piano();
+		render_grid();
+		$('body').keydown(key_handler);
+		$('#legend1').width('0px');
+		$('#legend1').height($('#legend0').height());
+		$('#piano1').height('0px');
+	});
+
+	// Depending on the value of bool, either add or remove the class
+	function toggle_on_bool(element, class_name, bool) {
+		if(bool) {
+			element.addClass(class_name);
+		} else {
+			element.removeClass(class_name);
+		}
+	}
+
+	// Render the entire grid on screen
+	function render_grid() {
+		let html = ''
+		for(let row = 0; row < ROWS; row += 1) {
+			if(!score[row]) {
+				score[row] = [];
+			}
+			html += '<tr class="box-row">';
+			for(let column = 0; column < COLUMNS; column += 1) {
+				if(!score[row][column]) {
+					score[row][column] = {right: [], right_type: 'join', left: [], left_type: 'join'};
+				}
+				let comment = score[row][column].comment;
+				if(comment === undefined) {
+					comment = '';
+				}
+				html += `<td class="box"><input class="comment" id="cell_${column}_${row}_comment" value="${comment}"><br><div class="box-inside" id="cell_${column}_${row}">`;
+				html += `<div class="box-hand" id="cell_${column}_${row}_right" onclick="select_cell(${column}, ${row}, 'right')">${render_entry(row, column, 'right')}</div>`;
+				html += '<hr>';
+				html += `<div class="box-hand" id="cell_${column}_${row}_left" onclick="select_cell(${column}, ${row}, 'left')">${render_entry(row, column, 'left')}</div>`;
+				html += '</div><td>';
+			}
+			html += '</tr>';
+		}
+		$('#grid').html(html);
+		update_selection();
+		localStorage.setItem('score', JSON.stringify(score));
+	}
+
+	// Draw the piano keys
+	function draw_piano() {
+		let html = '';
+		html += `<div id="vk_seq" class="vk_button" style="left: 20px; top: 20px;" onclick="set_note_type(event, 'seq')">C</div>`;
+		html += `<div id="vk_join" class="vk_button note-join" style="left: 20px; top: 60px;" onclick="set_note_type(event, 'join')">C</div>`;
+		html += `<div id="vk_chord" class="vk_button chord" style="left: 20px; top: 100px;" onclick="set_note_type(event, 'chord')">C</div>`;
+		const white_keys = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+		const black_keys = ['C#', 'D#', null, 'F#', 'G#', 'A#', null];
+		for(let i = 0; i < 7*4; i += 1) {
+			let left = i*30.5 + 80;
+			let octave = Math.floor((i-7)/7);
+			html += `<div style="position: absolute; left: ${left}px; top: 20px; width: 30.5px; height: 150px; border:1px solid #777777" onclick="enter_note(event, ${i}, false)"></div>`;
+			html += `<div style="position: absolute; left: ${left}px; top: 130px; width: 30.5px; text-align: center" onclick="enter_note(event, ${i}, false)"><span class="oct${octave}">${white_keys[i % 7]}</span></div>`;
+		}
+		for(let i = 0; i < 7*4-1; i += 1) {
+			let left = i*30.5 + 80;
+			let octave = Math.floor((i-7)/7);
+			if(black_keys[i % 7]) {
+				html += `<div style="position: absolute; left: ${left + 21}px; top: 20px; width: 20px; height: 90px; background: #000000" onclick="enter_note(event, ${i}, true)"></div>`;
+				html += `<div style="position: absolute; left: ${left + 21}px; top: 50px; width: 20px; text-align: center; color: #ffffff" onclick="enter_note(event, ${i}, true)"><span class="oct${octave}">${black_keys[i % 7]}</span></div>`;
+			}
+		}
+		html += `<div class="vk_button" style="left: 955px; top: 20px;" onclick="delete_note(event)">⌫</div>`;
+		html += `<div class="vk_button" style="left: 955px; top: 60px;" onclick="enter_misc(event, {mod: 'short'})"><span class="modifier">•</span></div>`;
+		html += `<div class="vk_button" style="left: 955px; top: 100px;" onclick="enter_misc(event, {mod: 'long'})"><span class="modifier">&#10095;</span></div>`;
+		html += `<div class="vk_button" style="left: 955px; top: 140px;" onclick="enter_misc(event, {key: null})"><span class="null">–</span></div>`;
+		$('#piano0').html(html);
+	}
+
+	// Scroll the main window if needed, if the selected cell is not fully visible
+	function ensure_scroll() {
+		let bottom_margin = $('#piano0').hasClass('hide') ? 40 : 200;
+		let top = window.pageYOffset;
+		let bottom = top + window.innerHeight;
+		let current_top = $('.selected').offset().top;
+		let current_bottom = current_top + $('.selected').height();
+		if(top > current_top - 20) {
+			window.scroll({top: current_top - 20});
+		} else if(bottom < current_bottom + bottom_margin) {
+			window.scroll({top: current_bottom + bottom_margin - window.innerHeight});
+		}
+	}
+
+	// Deselect the previous selection if applicable, and select the new cell and hand
+	function update_selection() {
+		if(last_selected) {
+			$(`#cell_${last_selected.x}_${last_selected.y}`).removeClass('selected');
+			$(`#cell_${last_selected.x}_${last_selected.y}_${last_selected.h}`).removeClass('selected-bg');
+		}
+		$(`#cell_${selected.x}_${selected.y}`).addClass('selected');
+		$(`#cell_${selected.x}_${selected.y}_${selected.h}`).addClass('selected-bg');
+		last_selected = {...selected};
+		update_virtual_keys();
+		ensure_scroll();
+	}
+
+	// Render the entry in the current cell and hand; updating cells in case we want to gray out identical cells
+	function update_selected_entry() {
+		localStorage.setItem('score', JSON.stringify(score));
+		$(`#cell_${selected.x}_${selected.y}_${selected.h}`).html(render_entry(selected.y, selected.x, selected.h));
+
+		// Update following cells in case they now have the same values as the previous now (and so should be gray)
+		for(let x = selected.x+1; x < COLUMNS; x += 1) {
+			$(`#cell_${x}_${selected.y}_${selected.h}`).html(render_entry(selected.y, x, selected.h));
+		}
+		update_virtual_keys();
+	}
+
+	// Update the virtual key selection
+	function update_virtual_keys() {
+		let current_type = score[selected.y][selected.x][`${selected.h}_type`];
+		toggle_on_bool($('#vk_seq'), 'vk_selected', current_type == 'seq');
+		toggle_on_bool($('#vk_join'), 'vk_selected', current_type == 'join');
+		toggle_on_bool($('#vk_chord'), 'vk_selected', current_type == 'chord');
+	}
+
+	// Show/hide the legend pop-up
+	function toggle_legend() {
+		$('#legend0').toggleClass('hide');
+		$('#legend1').toggleClass('hide');
+	}
+
+	// Show/hide the virtual piano
+	function toggle_piano() {
+		$('#piano0').toggleClass('hide');
+		$('#piano1').toggleClass('hide');
+		ensure_scroll();
+	}
+
+	// User clicked on a particular cell/hand – select that one
+	function select_cell(column, row, hand) {
+		selected = {x: column, y: row, h: hand};
+		update_selection();		
+	}
+
+	// User clicks on the virtual keyboard and inserts a note
+	function enter_note(event, i, is_black) {
+		const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+
+		let entry = score[selected.y][selected.x][selected.h];
+		let current_type = score[selected.y][selected.x][`${selected.h}_type`];
+		let key = notes[i % 7] + (is_black ? '\'' : '');
+		let octave = Math.floor((i-7)/7);
+
+		// Enter or delete chord
+		if(current_type == 'chord') {
+			if(entry.length == 0) {
+				entry.push({key: ''});
+			}
+			entry[entry.length-1].key += key;
+			update_selected_entry();
+		} else {
+			if(octave) {
+				entry.push({key: key, oct: octave});
+			} else {
+				entry.push({key: key});
+			}
+			update_selected_entry();
+		}
+
+		event.stopPropagation();
+	}
+
+	// Delete the last note (equivalent to pressing "Backspace")
+	function delete_note(event) {
+		let entry = score[selected.y][selected.x][selected.h];
+		let current_type = score[selected.y][selected.x][`${selected.h}_type`];
+		if(current_type == 'chord') {
+			if(entry.length > 0 && entry[entry.length-1].key.length > 0) {
+				entry[entry.length-1].key = entry[entry.length-1].key.slice(0, -1);
+				update_selected_entry();
+			}
+		} else {
+			if (entry.length > 0) {
+				entry.pop();
+			}
+			update_selected_entry();
+		}
+		event.stopPropagation();
+	}
+
+	// Add modifier or other miscellaneous command (not a note) - if we're not in a chord mode
+	function enter_misc(event, misc) {
+		let entry = score[selected.y][selected.x][selected.h];
+		let current_type = score[selected.y][selected.x][`${selected.h}_type`];
+		if(current_type != 'chord') {
+			entry.push(misc);
+			update_selected_entry();
+			event.stopPropagation();
+		}
+	}
+
+	// User clicks on the virtual keyboard and changes the note type
+	function set_note_type(event, type) {
+
+		let current_type = score[selected.y][selected.x][`${selected.h}_type`];
+		if(type != current_type) {
+			if(type == 'chord') {
+				score[selected.y][selected.x][`${selected.h}_type`] = 'chord';
+				// convert existing entry to a chord
+				convert_types();
+				update_selected_entry();
+			} else {
+				if (current_type == 'chord') {
+					convert_types();
+				}
+				score[selected.y][selected.x][`${selected.h}_type`] = type;
+				update_selected_entry();
+			}
+		}
+		event.stopPropagation();
+	}
+
+	// Key handling routine
+	function key_handler(e) {
+		if (e.metaKey || e.ctrlKey) {
+			return true;
+		}
+		if (comment_mode) {
+			if (e.key == 'Enter') {
+				score[selected.y][selected.x].comment = $(`#cell_${selected.x}_${selected.y}_comment`).val();
+				comment_mode = false;
+				update_selected_entry();
+				$(`#cell_${selected.x}_${selected.y}_comment`).blur();
+			}
+			return true;
+		}
+		let entry = score[selected.y][selected.x][selected.h];
+		let current_type = score[selected.y][selected.x][`${selected.h}_type`];
+
+		// Arpeggio and row commands
+		if(e.altKey) {
+			// Insert row
+			if(e.key == 'Enter') {
+				score.splice(selected.y, 0, []);
+				ROWS += 1;
+				render_grid();
+				return false;
+			}
+			if(e.key == '–') {
+				score.splice(selected.y, 1);
+				ROWS -= 1;
+				render_grid();
+				return false;
+			}
+			if(e.key == 'ArrowUp' && selected.y > 0) {
+				score.splice(selected.y - 1, 0, score[selected.y]);
+				score.splice(selected.y + 1, 1);
+				selected.y -= 1;
+				render_grid();
+				return false;
+			}
+			if(e.key == 'ArrowDown' && selected.y < ROWS - 1) {
+				score.splice(selected.y, 0, score[selected.y + 1]);
+				score.splice(selected.y + 2, 1);
+				selected.y += 1;
+				render_grid();
+				return false;
+			}
+			if(e.key == ' ') {
+				score[selected.y].splice(selected.x, 0, []);
+				score[selected.y].splice(COLUMNS, 1);
+				render_grid();
+				return false;
+			}
+			if(e.key == 'Delete') {
+				score[selected.y].splice(selected.x, 1);
+				score[selected.y].splice(COLUMNS - 1, 0, []);
+				render_grid();
+				return false;
+			}
+
+			// Add arpeggio
+			if(e.which >= 48 && e.which <= 57) {
+				if(!score[selected.y][selected.x][`${selected.h}_arp`]) {
+					score[selected.y][selected.x][`${selected.h}_arp`] = [];
+				}
+				score[selected.y][selected.x][`${selected.h}_arp`].push(e.which-48);
+				update_selected_entry();
+				return false;
+			}
+
+			// Clear arpeggio
+		 	if(e.which == 8) {	// Backspace
+				score[selected.y][selected.x][`${selected.h}_arp`] = [];
+				update_selected_entry();
+				return false;
+			}
+			return true;
+		}
+
+		// Move the selection
+		if(e.key == 'ArrowRight') {
+			selected.x += 1;
+			if (selected.x >= COLUMNS) {
+				selected.x = 0;
+			}
+			update_selection();
+			return false;
+		}
+		if(e.key == 'ArrowLeft') {
+			selected.x -= 1;
+			if (selected.x < 0) {
+				selected.x = COLUMNS-1;
+			}
+			update_selection();
+			return false;
+		}
+		if(e.key == 'ArrowDown') {
+			selected.y += 1;
+			if (selected.y >= ROWS) {
+				selected.y = 0;
+			}
+			update_selection();
+			return false;
+		}
+		if(e.key == 'ArrowUp') {
+			selected.y -= 1;
+			if (selected.y < 0) {
+				selected.y = ROWS-1;
+			}
+			update_selection();
+			return false;
+		}
+
+		// Change to chord mode
+		if(e.key == '/' && current_type != 'chord') {
+			score[selected.y][selected.x][`${selected.h}_type`] = 'chord';
+			// convert existing entry to a chord
+			convert_types();
+			update_selected_entry();
+			return false;
+		}
+
+		// Toggle between joined and sequential mode
+		if(e.key == ',') {
+			if (current_type == 'chord') {
+				convert_types();
+			}
+			score[selected.y][selected.x][`${selected.h}_type`] = (current_type == 'seq') ? 'join' : 'seq';
+			update_selected_entry();
+			return false;
+		}
+
+		// Toggle between right and left hand
+		if(e.key == 'Enter') {
+			selected.h = (selected.h == 'right') ? 'left' : 'right';
+			update_selection();
+			return false;
+		}
+
+		// Enter or delete chord
+		if(current_type == 'chord') {
+			if(e.key == 'Backspace' && entry.length > 0 && entry[entry.length-1].key.length > 0) {
+				entry[entry.length-1].key = entry[entry.length-1].key.slice(0, -1);
+				update_selected_entry();
+			}
+			else if (e.key != 'Backspace' && e.key != 'Shift' && e.key != 'Meta' && e.key != 'Alt' && e.key != 'Control') {
+				if(entry.length == 0) {
+					entry.push({key: ''});
+				}
+				entry[entry.length-1].key += e.key;
+				update_selected_entry();
+			}
+			return false;
+		}
+
+		// Delete entry (if not a chord)
+		if(e.key == 'Backspace') {
+			if (entry.length > 0) {
+				entry.pop();
+			}
+			update_selected_entry();
+			return false;
+		}
+
+		// Add a sharp of last entered node
+		if(e.key == '\'') {
+			if(entry.length > 0 && entry[entry.length-1].key) {
+				if (entry[entry.length-1].key.substr(-1) == '\'') {
+				 	entry[entry.length-1].key = entry[entry.length-1].key.slice(0, -1);
+				} else {
+				 	entry[entry.length-1].key = entry[entry.length-1].key + '\'';
+				}
+				update_selected_entry();
+				return false;
+			}
+		}
+
+		// Lower the octave of last entered note
+		if(e.key == '-') {
+			if(entry.length > 0 && entry[entry.length-1].key) {
+				if (!entry[entry.length-1].oct) {
+					entry[entry.length-1].oct = -1;
+				} else {
+				 	entry[entry.length-1].oct -= 1;
+				}
+				update_selected_entry();
+				return false;
+			}
+		}
+
+		// Increase the octave of last entered note
+		if(e.key == '+' || e.key == '=') {
+			if(entry.length > 0 && entry[entry.length-1].key) {
+				if (!entry[entry.length-1].oct) {
+					entry[entry.length-1].oct = 1;
+				} else {
+				 	entry[entry.length-1].oct += 1;
+				}
+				update_selected_entry();
+				return false;
+			}
+		}
+
+		// Add a short modifier
+		if(e.key == '.') {
+			entry.push({mod: 'short'});
+			update_selected_entry();
+			return false;
+		}
+
+		// Add a long modifier
+		if(e.key == '>') {
+			entry.push({mod: 'long'});
+			update_selected_entry();
+			return false;
+		}
+
+		// Add a pause
+		if(e.key == ' ') {
+			entry.push({key: null});
+			update_selected_entry();
+			return false;
+		}
+
+		// Comment mode
+		if(e.key == '@') {
+			comment_mode = true;
+			$(`#cell_${selected.x}_${selected.y}_comment`).focus();
+			return false;
+		}
+
+		// Add notes in join/sequence mode
+		if((e.key >= 'a' && e.key <= 'g') || (e.key >= 'A' && e.key <= 'G')) {
+			entry.push({key: e.key.toUpperCase()});
+			update_selected_entry();
+			return false;
+		}
+	}
+
+	// If the user converts between chord and join/sequence modes, try to convert the existing note(s)
+	function convert_types() {
+		let entry = score[selected.y][selected.x][selected.h];
+		if(entry.length > 0 && entry[0].key) {
+			let chord_starter = entry[0].key[0];
+			if(entry[0].key[1] == '\'') {
+				chord_starter += entry[0].key[1];
+			}
+			score[selected.y][selected.x][selected.h] = [{key: chord_starter}];
+		} else {
+			score[selected.y][selected.x][selected.h] = [];
+		}
+	}
+
+	// Return true if the notes in the particular (row, column, hand) are a repeat of the previous column
+	function is_repeat(row, column, hand) {
+		if (column == 0) {	// not a repeat if we are in the first column
+			return false;
+		}
+		let current = {notes: score[row][column][hand], type: score[row][column][hand + '_type'], arp: score[row][column][hand + '_arp']};
+		let previous = {notes: score[row][column-1][hand], type: score[row][column-1][hand + '_type'], arp: score[row][column-1][hand + '_arp']};
+		return (JSON.stringify(current) == JSON.stringify(previous));
+	}
+
+	// Render the cell's notes
+	function render_entry(row, column, hand) {
+		if(!score[row] || !score[row][column]) {
+			return '';
+		}
+		let entry = score[row][column];
+		let rendering = '';
+		let notes = entry[hand];
+		let type = entry[hand + '_type'];
+		let arp = entry[hand + '_arp'];
+		let repeats = is_repeat(row, column, hand);
+		if (notes) {
+			for (let note of notes) {
+				let note_classes = [];
+				let note_html = '';
+				if (note.key) {
+					let first = note.key[0];
+					let rest = note.key.substring(1);
+					note_html = first;
+					if (note.oct && note.oct!=0) {
+						note_html = `<span class="oct${note.oct}">${note_html}</span>`;
+					}
+					note_html += rest.replace(/'/g, "<span class='sharp'>&sharp;</span>");
+					if (type == 'chord' && !repeats) {
+						note_classes.push('chord');
+					}
+				}
+				if (note.key === null) {
+					note_classes.push('null');
+					note_html = '–';
+				}
+				if (note.mod == 'short') {
+					note_classes.push('modifier');
+					note_html = '•';
+				}
+				if (note.mod == 'long') {
+					note_classes.push('modifier');
+					note_html = '&#10095;';
+				}
+				if (type == 'seq') {
+					note_classes.push('note-seq');
+				}
+				if (type == 'join') {
+					note_classes.push('note-join');
+				}
+				if(repeats) {
+					note_classes.push('gray');
+				}
+				rendering += `<span class="${note_classes.join(' ')}">${note_html}</span>`;
+			}
+		}
+		if (arp) {
+			rendering += '<span class="arp-box">';
+			let max_arp = Math.max(...arp);
+			for (let level of arp) {
+				let top = (max_arp * 2 + 1) - level * 4;
+				rendering += `<span class="${repeats ? 'gray' : ''} arp" style="top:${top}px;">•</span>`;
+			}
+			rendering += '</span>';
+		}
+		return rendering;
+	}
+</script>
+</html>
